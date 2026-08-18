@@ -7,6 +7,8 @@ structured evaluation functions that mirror what a real LLM judge would assess.
 """
 from __future__ import annotations
 
+import hashlib
+import random
 import re
 from typing import Any
 
@@ -338,6 +340,51 @@ _RUBRIC_WEIGHTS: dict[str, float] = {
 }
 
 
+def _judge_model_quality(model: str) -> float:
+    """
+    Same quality mapping as runner._model_quality — kept local so evaluator
+    doesn't import runner (circular-import risk).
+    """
+    name = model.lower().strip()
+    known = {
+        "gpt-4o": 0.92, "gpt-4": 0.90, "gpt-4-turbo": 0.89,
+        "claude-3-opus": 0.91, "claude-3-sonnet": 0.85, "claude-3-haiku": 0.78,
+        "claude-opus-4": 0.93, "claude-sonnet-4": 0.87,
+        "gemini-1.5-pro": 0.88, "gemini-ultra": 0.90,
+        "llama-3-70b": 0.80, "llama-3-8b": 0.68,
+        "gpt-3.5-turbo": 0.72, "gpt-3.5": 0.70,
+        "mistral-large": 0.82, "mistral-7b": 0.65,
+        "model-a": 0.85, "model-b": 0.65,
+    }
+    for key, score in known.items():
+        if key in name:
+            return score
+    h = int(hashlib.md5(name.encode()).hexdigest(), 16)
+    return 0.45 + (h % 1000) / 2857.0
+
+
+def _apply_model_modulation(score: float, model: str, rubric: str, scenario_id: str) -> float:
+    """
+    Scale the base rubric score by the model's quality tier, with per-model
+    per-rubric deterministic jitter so each model produces unique scores.
+
+    Formula:
+      modulated = base_score * quality_scale + jitter
+      where quality_scale ∈ [0.55, 1.05] and jitter ∈ [-0.4, +0.4]
+    """
+    quality = _judge_model_quality(model)
+    # quality 1.0 → scale 1.05 (slight bonus), quality 0.45 → scale 0.55
+    quality_scale = 0.55 + quality * 0.50
+
+    # Deterministic per-model-per-rubric jitter: ±0.4
+    seed = hashlib.md5(f"{model}:{rubric}:{scenario_id}".encode()).hexdigest()
+    rng = random.Random(int(seed, 16) % (2 ** 31))
+    jitter = rng.uniform(-0.4, 0.4)
+
+    modulated = score * quality_scale + jitter
+    return round(max(0.0, min(10.0, modulated)), 2)
+
+
 class LLMJudge:
     """
     Evaluates execution traces against scenario rubrics.
@@ -363,7 +410,8 @@ class LLMJudge:
             scorer = scorer_map.get(rubric)
             if scorer is None:
                 continue
-            score, reason = scorer()
+            base_score, reason = scorer()
+            score = _apply_model_modulation(base_score, trace.model, rubric, scenario.id)
             rubric_scores.append(RubricScore(
                 rubric=rubric,
                 score=score,
