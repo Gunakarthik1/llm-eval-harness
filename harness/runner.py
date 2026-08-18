@@ -605,13 +605,38 @@ _MODEL_B_RESPONSES: dict[str, list[str]] = {
 }
 
 
+def _model_quality(model: str) -> float:
+    """
+    Map any model name to a deterministic quality score in [0.0, 1.0].
+    Well-known strong models score high; unknown names get a hash-derived score.
+    """
+    name = model.lower().strip()
+    known = {
+        "gpt-4o": 0.92, "gpt-4": 0.90, "gpt-4-turbo": 0.89,
+        "claude-3-opus": 0.91, "claude-3-sonnet": 0.85, "claude-3-haiku": 0.78,
+        "claude-opus-4": 0.93, "claude-sonnet-4": 0.87,
+        "gemini-1.5-pro": 0.88, "gemini-ultra": 0.90,
+        "llama-3-70b": 0.80, "llama-3-8b": 0.68,
+        "gpt-3.5-turbo": 0.72, "gpt-3.5": 0.70,
+        "mistral-large": 0.82, "mistral-7b": 0.65,
+        "model-a": 0.85, "model-b": 0.65,
+    }
+    for key, score in known.items():
+        if key in name:
+            return score
+    # Deterministic hash-based score for unknown names: range [0.45, 0.80]
+    h = int(hashlib.md5(name.encode()).hexdigest(), 16)
+    return 0.45 + (h % 1000) / 2857.0  # maps to [0.45, 0.80]
+
+
 def _get_response(model: str, scenario_id: str, turn_index: int) -> str:
     """Return a deterministic simulated response for the given model/scenario/turn."""
-    corpus = _MODEL_A_RESPONSES if model == "model-a" else _MODEL_B_RESPONSES
+    quality = _model_quality(model)
+    use_a_corpus = quality >= 0.75
+    corpus = _MODEL_A_RESPONSES if use_a_corpus else _MODEL_B_RESPONSES
     turns_for_scenario = corpus.get(scenario_id, [])
     if not turns_for_scenario:
-        # Fallback generic response
-        if model == "model-a":
+        if use_a_corpus:
             return (
                 f"Here is a thorough response to the scenario '{scenario_id}'. "
                 "I have addressed all the key requirements, included relevant keywords, "
@@ -631,7 +656,8 @@ def _simulate_tool_calls(scenario: "Scenario", model: str) -> list[ToolCall]:
     if not scenario.tool_required:
         return []
     tool_name = scenario.expected_tool or "unknown_tool"
-    if model == "model-a":
+    quality = _model_quality(model)
+    if quality >= 0.75:
         # Correct tool call
         if tool_name == "weather":
             params = {"location": "Seattle, WA"}
