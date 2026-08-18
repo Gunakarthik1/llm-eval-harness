@@ -3,560 +3,753 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eval Harness</title>
+<title>LLM Eval Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --paper:        #FAF9F6;
-  --ink:          #18181B;
-  --stone:        #71717A;
-  --border:       rgba(24,24,27,0.10);
-  --accent:       #D97706;
-  --accent-light: rgba(217,119,6,0.08);
+  --bg:          #050508;
+  --bg2:         #0a0a10;
+  --bg3:         #0f0f18;
+  --card:        rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --card-hover:  rgba(255,255,255,0.07);
 
-  --teal:         #0D9488;
-  --teal-light:   rgba(13,148,136,0.10);
-  --red:          #DC2626;
-  --red-light:    rgba(220,38,38,0.08);
-  --red-border:   rgba(220,38,38,0.25);
+  --green:       #22c55e;
+  --green-dim:   rgba(34,197,94,0.12);
+  --green-glow:  rgba(34,197,94,0.25);
+  --purple:      #7c3aed;
+  --purple-dim:  rgba(124,58,237,0.12);
+  --purple-mid:  #a78bfa;
+  --blue:        #3b82f6;
+  --blue-dim:    rgba(59,130,246,0.12);
+  --orange:      #f59e0b;
+  --orange-dim:  rgba(245,158,11,0.12);
+  --red:         #ef4444;
+  --red-dim:     rgba(239,68,68,0.12);
+  --cyan:        #06b6d4;
+  --cyan-dim:    rgba(6,182,212,0.12);
+  --pink:        #ec4899;
+  --pink-dim:    rgba(236,72,153,0.12);
 
-  --surface:      #FFFFFF;
-  --border-solid: #E4E4E7;
+  --text:        #f1f5f9;
+  --text-dim:    #94a3b8;
+  --text-muted:  #475569;
 
-  --radius-sm:    4px;
-  --radius:       8px;
-  --radius-lg:    12px;
-  --radius-xl:    16px;
+  --radius:      10px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
 
-  --shadow-sm:    0 1px 2px rgba(0,0,0,0.04);
-  --shadow:       0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-
-  --font-serif:   'Instrument Serif', Georgia, serif;
-  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font:        'Inter', system-ui, sans-serif;
+  --mono:        'JetBrains Mono', monospace;
 }
 
 /* ============================================================
    RESET & BASE
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
-
 body {
-  font-family: var(--font-sans);
-  background: var(--paper);
-  color: var(--ink);
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-h1, h2, h3 { font-family: var(--font-serif); line-height: 1.25; }
-
-button {
-  font-family: var(--font-sans);
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s ease;
-}
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-
-input[type="text"], input[type="number"] {
-  font-family: var(--font-sans);
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius);
-  padding: 0.6rem 0.85rem;
-  outline: none;
-  width: 100%;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-input[type="text"]:focus, input[type="number"]:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
-}
-input[type="text"]::placeholder { color: var(--stone); }
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
 
 /* ============================================================
-   LAYOUT — single-column editorial
+   LAYOUT
    ============================================================ */
-.page {
-  max-width: 820px;
-  margin: 0 auto;
-  padding: 0 1.5rem 4rem;
-}
-
-/* ============================================================
-   HEADER
-   ============================================================ */
-.site-header {
-  padding: 3rem 0 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2.5rem;
-}
-
-.site-header h1 {
-  font-size: clamp(2rem, 5vw, 2.75rem);
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.35rem;
-}
-
-.site-header .tagline {
-  font-size: 1rem;
-  color: var(--stone);
-  font-style: italic;
-}
-
-.site-header .accent-dot {
-  display: inline-block;
-  width: 8px; height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-}
-
-/* ============================================================
-   SECTION LABELS
-   ============================================================ */
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--stone);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-/* ============================================================
-   CARDS
-   ============================================================ */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-sm);
-}
-
-/* ============================================================
-   SETUP SECTION
-   ============================================================ */
-.setup-section { margin-bottom: 2rem; }
-
-/* Model row */
-.model-row {
+.shell {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 56px 1fr;
+  min-height: 100vh;
 }
 
-.model-field { display: flex; flex-direction: column; gap: 0.4rem; }
-
-.model-field label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--stone);
+/* ============================================================
+   TOP NAV
+   ============================================================ */
+.topnav {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  background: rgba(5,5,8,0.95);
+  border-bottom: 1px solid var(--card-border);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.model-tag {
-  display: inline-flex;
+.logo {
+  display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.logo-dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 8px var(--green); }
+  50% { box-shadow: 0 0 16px var(--green), 0 0 24px var(--green-glow); }
+}
+
+.topnav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(34,197,94,0.2);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--card-border);
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sidebar-section-title {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-sm);
-}
-.model-tag-a {
-  background: var(--teal-light);
-  color: var(--teal);
-}
-.model-tag-b {
-  background: var(--accent-light);
-  color: var(--accent);
-}
-
-/* Scenarios */
-.scenarios-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  color: var(--text-muted);
   margin-bottom: 0.6rem;
 }
 
-.pill-actions {
+/* Model checkboxes */
+.model-list {
   display: flex;
+  flex-direction: column;
   gap: 0.4rem;
 }
 
-.pill-action-btn {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--stone);
-  background: transparent;
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-sm);
-  padding: 0.2rem 0.6rem;
-}
-.pill-action-btn:hover { color: var(--ink); border-color: var(--ink); }
-
-.scenario-pills {
+.model-check-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 1.25rem;
-  min-height: 36px;
-}
-
-.scenario-pill {
-  display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.7rem;
-  border-radius: var(--radius-xl);
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid var(--border-solid);
-  background: var(--surface);
-  color: var(--ink);
+  gap: 0.5rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius);
   cursor: pointer;
-  user-select: none;
-  transition: all 0.12s;
+  transition: background 0.15s;
+  border: 1px solid transparent;
 }
-.scenario-pill:hover { border-color: var(--accent); }
-.scenario-pill.selected {
-  background: var(--accent-light);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 600;
-}
-.scenario-pill.selected .pill-check { opacity: 1; }
-.pill-check { opacity: 0; color: var(--accent); }
-.scenario-pill:not(.selected) .pill-check { display: none; }
+.model-check-row:hover { background: var(--card); border-color: var(--card-border); }
+.model-check-row.selected { background: var(--card); border-color: var(--card-border); }
 
-.scenarios-loading {
-  font-size: 13px;
-  color: var(--stone);
-  font-style: italic;
-  padding: 0.5rem 0;
+.model-check-row input[type="checkbox"] { display: none; }
+
+.model-color-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-/* Runs per scenario */
-.runs-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.runs-row label {
-  font-size: 12px;
+.model-badge {
+  font-size: 10px;
   font-weight: 600;
-  color: var(--stone);
+  padding: 0.1rem 0.45rem;
+  border-radius: 99px;
+  margin-left: auto;
   white-space: nowrap;
 }
-.runs-row input[type="number"] {
-  width: 80px;
+
+.model-name-text {
+  font-size: 12px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.check-icon {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.model-check-row.selected .check-icon {
+  background: var(--green);
+  border-color: var(--green);
+}
+.check-icon svg { display: none; }
+.model-check-row.selected .check-icon svg { display: block; }
+
+/* Scenario multi-select */
+.scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.scenario-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11.5px;
+  transition: background 0.12s;
+  color: var(--text-dim);
+}
+.scenario-item:hover { background: var(--card); color: var(--text); }
+.scenario-item.selected { color: var(--text); }
+.scenario-item.selected .sc-check { background: var(--green); border-color: var(--green); }
+
+.sc-check {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--text-muted);
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* Run button */
 .run-btn {
   width: 100%;
-  padding: 0.85rem 1.5rem;
-  font-size: 15px;
+  padding: 0.75rem 1rem;
+  font-size: 13px;
   font-weight: 700;
-  background: var(--accent);
-  color: white;
+  background: var(--green);
+  color: #050508;
+  border: none;
   border-radius: var(--radius);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  letter-spacing: -0.01em;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+  box-shadow: 0 0 16px var(--green-glow);
 }
 .run-btn:hover:not(:disabled) {
-  background: #B45309;
-  box-shadow: 0 2px 12px rgba(217,119,6,0.35);
+  background: #16a34a;
+  box-shadow: 0 0 24px var(--green-glow);
+  transform: translateY(-1px);
 }
-.run-btn:active:not(:disabled) { transform: translateY(1px); }
+.run-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-/* ============================================================
-   PROGRESS SECTION
-   ============================================================ */
-.progress-section {
-  display: none;
-  margin-bottom: 2rem;
-}
-.progress-section.visible { display: block; }
-
-.progress-inner {
-  text-align: center;
-  padding: 2.5rem 1.5rem 2rem;
-}
-
-.progress-scenario-text {
-  font-family: var(--font-serif);
-  font-size: 1.4rem;
-  color: var(--ink);
-  margin-bottom: 0.5rem;
-  min-height: 2rem;
-}
-
-.progress-elapsed {
+.cancel-btn {
+  width: 100%;
+  padding: 0.6rem 1rem;
   font-size: 12px;
-  color: var(--stone);
-  margin-bottom: 1.25rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: none;
+}
+.cancel-btn.visible { display: block; }
+.cancel-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* Progress bar */
+.progress-wrap {
+  display: none;
+}
+.progress-wrap.visible { display: block; }
+
+.progress-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-bottom: 0.4rem;
+  display: flex;
+  justify-content: space-between;
 }
 
 .progress-track {
-  height: 3px;
-  background: var(--border);
+  height: 4px;
+  background: rgba(255,255,255,0.06);
   border-radius: 99px;
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--green), var(--purple-mid));
   border-radius: 99px;
-  transition: width 0.4s ease;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+/* Live log */
+.live-log {
+  display: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  max-height: 100px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  padding: 0.5rem;
+  line-height: 1.7;
+}
+.live-log.visible { display: block; }
+.log-line-green { color: var(--green); }
+.log-line-purple { color: var(--purple-mid); }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 /* ============================================================
-   RESULTS SECTION
+   KPI CARDS
    ============================================================ */
-.results-section {
-  display: none;
-  margin-bottom: 2rem;
-}
-.results-section.visible { display: block; }
-
-/* Winner banner */
-.winner-banner {
-  margin-bottom: 2rem;
-  padding: 1.25rem 1.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border-solid);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--accent);
-}
-.winner-banner h2 {
-  font-size: 1.5rem;
-  color: var(--ink);
-  letter-spacing: -0.02em;
-  margin-bottom: 0.2rem;
-}
-.winner-banner .winner-sub {
-  font-size: 13px;
-  color: var(--stone);
-}
-
-/* Rubric comparison */
-.rubric-section { margin-bottom: 2rem; }
-
-.rubric-row {
-  padding: 1rem 0;
-  border-bottom: 1px solid var(--border);
+.kpi-row {
   display: grid;
-  grid-template-columns: 130px 1fr auto;
-  gap: 1rem;
-  align-items: center;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
 }
-.rubric-row:last-child { border-bottom: none; }
 
-.rubric-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.rubric-winner-tag {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.1rem 0.4rem;
-  border-radius: var(--radius-sm);
-  margin-top: 2px;
-}
-.rubric-winner-a { background: var(--teal-light); color: var(--teal); }
-.rubric-winner-b { background: var(--accent-light); color: var(--accent); }
-.rubric-winner-tie { background: rgba(113,113,122,0.08); color: var(--stone); }
-
-.rubric-bars { display: flex; flex-direction: column; gap: 0.5rem; }
-
-.bar-line {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 11px;
-}
-.bar-model-label {
-  width: 20px;
-  font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  color: var(--stone);
-  flex-shrink: 0;
-}
-.bar-track {
-  flex: 1;
-  height: 7px;
-  background: var(--border);
-  border-radius: 99px;
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.25rem;
+  transition: background 0.2s, border-color 0.2s;
+  position: relative;
   overflow: hidden;
 }
-.bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.02));
+  pointer-events: none;
 }
-.bar-fill-a { background: var(--teal); }
-.bar-fill-b { background: var(--accent); }
-.bar-score {
-  font-size: 12px;
-  font-weight: 700;
-  width: 30px;
-  text-align: right;
-  flex-shrink: 0;
-}
-.bar-score-a { color: var(--teal); }
-.bar-score-b { color: var(--accent); }
 
-/* Regressions alert */
-.regression-alert {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--red-border);
-  background: var(--red-light);
-  border-radius: var(--radius);
-  margin-bottom: 0.6rem;
-}
-.regression-alert-icon { color: var(--red); flex-shrink: 0; margin-top: 1px; }
-.regression-alert-text { font-size: 13px; color: var(--ink); line-height: 1.5; }
-.regression-alert-text strong { color: var(--red); }
+.kpi-card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.12); }
 
-/* Raw results table */
-.raw-table-section { margin-bottom: 2rem; }
-
-.results-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-.results-table th {
-  text-align: left;
-  padding: 0.55rem 0.75rem;
-  border-bottom: 2px solid var(--border-solid);
-  font-size: 11px;
-  font-weight: 700;
+.kpi-label {
+  font-size: 10.5px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--stone);
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
 }
-.results-table td {
-  padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-}
-.results-table tr:last-child td { border-bottom: none; }
-.results-table tr:hover td { background: rgba(0,0,0,0.015); }
 
-.winner-cell-a { color: var(--teal); font-weight: 600; }
-.winner-cell-b { color: var(--accent); font-weight: 600; }
-.winner-cell-tie { color: var(--stone); }
+.kpi-value {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.kpi-green .kpi-value { color: var(--green); }
+.kpi-purple .kpi-value { color: var(--purple-mid); }
+.kpi-blue .kpi-value { color: var(--blue); }
+.kpi-orange .kpi-value { color: var(--orange); }
 
 /* ============================================================
-   LEADERBOARD
+   CENTER ROW: Radar + Leaderboard
    ============================================================ */
-.leaderboard-section { margin-bottom: 2rem; }
+.center-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 0.85rem;
+}
+
+/* Glass cards */
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple-mid);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.card-title-icon {
+  width: 18px; height: 18px;
+  background: var(--purple-dim);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* ============================================================
+   RADAR CHART
+   ============================================================ */
+.radar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#radar-svg {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+}
+
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: center;
+  margin-top: 0.75rem;
+}
+
+.radar-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.radar-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+.radar-tooltip {
+  position: fixed;
+  background: rgba(10,10,16,0.95);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.85rem;
+  font-size: 11.5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+.radar-tooltip.visible { opacity: 1; }
+
+.radar-tooltip-model {
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+.radar-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--text-dim);
+}
+.radar-tooltip-row span:last-child { color: var(--green); font-weight: 600; }
+
+/* ============================================================
+   LEADERBOARD TABLE
+   ============================================================ */
+.lb-table-wrap {
+  overflow: auto;
+}
 
 .lb-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: 12px;
 }
+
 .lb-table th {
   text-align: left;
-  padding: 0.55rem 0.75rem;
-  border-bottom: 2px solid var(--border-solid);
-  font-size: 11px;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--stone);
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color 0.15s;
 }
+.lb-table th:hover { color: var(--text-dim); }
+.lb-table th.sorted { color: var(--purple-mid); }
+.lb-table th .sort-arrow { margin-left: 0.25rem; }
+
 .lb-table td {
-  padding: 0.65rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
   vertical-align: middle;
 }
 .lb-table tr:last-child td { border-bottom: none; }
-.lb-table tr:hover td { background: rgba(0,0,0,0.015); }
 
-.lb-rank {
-  font-weight: 700;
-  color: var(--stone);
-  font-size: 13px;
-  width: 36px;
+.lb-table tbody tr {
+  transition: background 0.12s;
+  cursor: pointer;
 }
-.lb-rank-1 { color: var(--accent); }
-.lb-model { font-weight: 600; }
-.lb-score { font-weight: 700; font-size: 1.05rem; color: var(--accent); }
-.lb-runs { color: var(--stone); }
-.lb-best { color: var(--teal); font-size: 12px; }
-.lb-worst { color: var(--stone); font-size: 12px; }
+.lb-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
 
-.lb-empty {
+/* Rank medals */
+.rank-cell {
+  font-weight: 700;
+  font-size: 12px;
+  width: 36px;
   text-align: center;
-  padding: 2.5rem 1rem;
-  color: var(--stone);
-  font-style: italic;
-  font-size: 14px;
+}
+.rank-gold   { color: #fbbf24; }
+.rank-silver { color: #94a3b8; }
+.rank-bronze { color: #b45309; }
+
+/* Row highlight */
+.lb-table tbody tr.gold-row td { background: rgba(251,191,36,0.04); }
+.lb-table tbody tr.silver-row td { background: rgba(148,163,184,0.03); }
+.lb-table tbody tr.bronze-row td { background: rgba(180,83,9,0.03); }
+
+/* Score bar cell */
+.score-bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 90px;
+}
+.score-bar-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+  min-width: 40px;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.score-bar-num {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--green);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.model-dot-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
 }
 
 /* ============================================================
-   UTILITIES
+   TEST CASE INSPECTOR
+   ============================================================ */
+.inspector-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.inspector-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.styled-select {
+  font-family: var(--font);
+  font-size: 12px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-width: 200px;
+}
+.styled-select:focus { border-color: var(--purple); }
+.styled-select option { background: #0f0f18; }
+
+.inspector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.inspector-col {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+}
+
+.inspector-model-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.inspector-model-name {
+  font-size: 12px;
+  font-weight: 700;
+  flex: 1;
+}
+
+.inspector-score {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--green);
+}
+
+.inspector-response {
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.7;
+  max-height: 140px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.judge-btn {
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.4rem 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--purple-mid);
+  background: var(--purple-dim);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.judge-btn:hover { background: rgba(124,58,237,0.2); }
+
+.judge-reasoning {
+  display: none;
+  margin-top: 0.6rem;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--mono);
+  line-height: 1.6;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  padding: 0.5rem;
+  max-height: 100px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.judge-reasoning.visible { display: block; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+.empty-state-icon {
+  font-size: 36px;
+  margin-bottom: 0.75rem;
+  opacity: 0.4;
+}
+.empty-state p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* ============================================================
+   SPINNER
    ============================================================ */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner {
   display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,0.35);
-  border-top-color: white;
+  width: 13px; height: 13px;
+  border: 2px solid rgba(5,5,8,0.3);
+  border-top-color: #050508;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: spin 0.55s linear infinite;
   flex-shrink: 0;
 }
 
-/* Toast */
+/* ============================================================
+   TOAST
+   ============================================================ */
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -567,15 +760,16 @@ input[type="text"]::placeholder { color: var(--stone); }
   z-index: 999;
 }
 .toast {
-  background: var(--ink);
-  color: white;
-  padding: 0.65rem 1rem;
+  background: var(--bg3);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  padding: 0.6rem 0.9rem;
   border-radius: var(--radius);
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
   max-width: 320px;
   animation: toast-in 0.2s ease;
 }
@@ -583,171 +777,201 @@ input[type="text"]::placeholder { color: var(--stone); }
   from { transform: translateY(8px); opacity: 0; }
   to   { transform: translateY(0);   opacity: 1; }
 }
-.toast.error   { background: var(--red); }
-.toast.success { background: var(--teal); }
+.toast.error   { border-color: rgba(239,68,68,0.3); }
+.toast.success { border-color: rgba(34,197,94,0.3); }
+.toast-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.toast.error .toast-dot   { background: var(--red); }
+.toast.success .toast-dot { background: var(--green); }
+.toast.info .toast-dot    { background: var(--blue); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-solid); border-radius: 99px; }
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fade-in-up 0.35s ease both; }
 
-/* Responsive */
-@media (max-width: 560px) {
-  .model-row { grid-template-columns: 1fr; }
-  .rubric-row { grid-template-columns: 1fr; }
+/* Stagger */
+.kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .center-row { grid-template-columns: 1fr; }
+  .inspector-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .shell { grid-template-columns: 1fr; grid-template-rows: 56px auto 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--card-border); max-height: 300px; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="shell">
 
   <!-- ============================================================
-       HEADER
+       TOP NAV
   ============================================================ -->
-  <header class="site-header">
-    <h1><span class="accent-dot"></span>Eval Harness</h1>
-    <p class="tagline">LLM-as-a-Judge scoring. No vibes, just rubrics.</p>
-  </header>
+  <nav class="topnav">
+    <a href="/" class="logo">
+      <span class="logo-dot"></span>
+      LLM Eval
+    </a>
+    <span style="color:var(--text-muted);font-size:12px;margin-left:0.25rem">/ Dashboard</span>
+    <div class="topnav-right">
+      <span class="nav-badge" id="run-status-badge">Ready</span>
+      <span style="font-size:11px;color:var(--text-muted);font-family:var(--mono)" id="run-ts"></span>
+    </div>
+  </nav>
 
   <!-- ============================================================
-       EVALUATION SETUP
+       SIDEBAR
   ============================================================ -->
-  <section class="setup-section">
-    <div class="section-label">
-      <i data-lucide="settings-2" style="width:12px;height:12px"></i>
-      Evaluation Setup
+  <aside class="sidebar">
+
+    <!-- Models -->
+    <div>
+      <div class="sidebar-section-title">Models</div>
+      <div class="model-list" id="model-list">
+        <!-- populated by JS -->
+      </div>
     </div>
 
-    <div class="card">
-
-      <!-- Model inputs -->
-      <div class="model-row">
-        <div class="model-field">
-          <label>
-            <span class="model-tag model-tag-a">Model A</span>
-            Baseline
-          </label>
-          <input type="text" id="model-a-input" value="gpt-4o" placeholder="e.g. gpt-4o">
-        </div>
-        <div class="model-field">
-          <label>
-            <span class="model-tag model-tag-b">Model B</span>
-            Challenger
-          </label>
-          <input type="text" id="model-b-input" value="gpt-3.5-turbo" placeholder="e.g. gpt-3.5-turbo">
-        </div>
+    <!-- Scenarios -->
+    <div>
+      <div class="sidebar-section-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span>Scenarios</span>
+        <span style="font-size:10px;color:var(--text-muted);cursor:pointer" id="sc-toggle-all">All</span>
       </div>
-
-      <!-- Scenarios -->
-      <div class="scenarios-header">
-        <div style="font-size:12px;font-weight:600;color:var(--stone)">
-          Scenarios &mdash; <span id="selected-count">0</span> of <span id="total-count">0</span> selected
-        </div>
-        <div class="pill-actions">
-          <button class="pill-action-btn" onclick="selectAll()">All</button>
-          <button class="pill-action-btn" onclick="selectNone()">None</button>
-        </div>
+      <div class="scenario-list" id="scenario-list">
+        <div style="font-size:11px;color:var(--text-muted);font-style:italic;padding:0.25rem">Loading...</div>
       </div>
-      <div class="scenario-pills" id="scenario-pills">
-        <span class="scenarios-loading">Loading scenarios&hellip;</span>
-      </div>
-
-      <!-- N runs -->
-      <div class="runs-row">
-        <label for="n-runs-input">Runs per scenario</label>
-        <input type="number" id="n-runs-input" value="1" min="1" max="20" style="width:80px">
-      </div>
-
-      <!-- Run button -->
-      <button class="run-btn" id="run-btn" onclick="startRun()" disabled>
-        <i data-lucide="play" style="width:16px;height:16px"></i>
-        Run Evaluation
-      </button>
     </div>
-  </section>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-label-text">Running...</span>
+        <span id="progress-pct-text">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Live log -->
+    <div class="live-log" id="live-log"></div>
+
+    <!-- Run button -->
+    <button class="run-btn" id="run-btn" onclick="startRun()" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Run Evaluation
+    </button>
+    <button class="cancel-btn" id="cancel-btn" onclick="cancelRun()">Cancel</button>
+
+  </aside>
 
   <!-- ============================================================
-       PROGRESS
+       MAIN CONTENT
   ============================================================ -->
-  <section class="progress-section" id="progress-section">
-    <div class="section-label">
-      <i data-lucide="loader-2" style="width:12px;height:12px"></i>
-      In Progress
+  <main class="main">
+
+    <!-- KPI Cards -->
+    <div class="kpi-row" id="kpi-row">
+      <div class="kpi-card kpi-green animate-in">
+        <div class="kpi-label">Models Evaluated</div>
+        <div class="kpi-value" id="kpi-models">—</div>
+        <div class="kpi-sub" id="kpi-models-sub">No run yet</div>
+      </div>
+      <div class="kpi-card kpi-blue animate-in">
+        <div class="kpi-label">Test Cases Run</div>
+        <div class="kpi-value" id="kpi-cases">—</div>
+        <div class="kpi-sub" id="kpi-cases-sub">Across all scenarios</div>
+      </div>
+      <div class="kpi-card kpi-purple animate-in">
+        <div class="kpi-label">Top Performer</div>
+        <div class="kpi-value" id="kpi-top" style="font-size:16px;padding-top:4px">—</div>
+        <div class="kpi-sub" id="kpi-top-sub">Score: —</div>
+      </div>
+      <div class="kpi-card kpi-orange animate-in">
+        <div class="kpi-label">Avg Score</div>
+        <div class="kpi-value" id="kpi-avg">—</div>
+        <div class="kpi-sub">Across all models</div>
+      </div>
     </div>
-    <div class="card">
-      <div class="progress-inner">
-        <div class="progress-scenario-text" id="progress-text">Queued&hellip;</div>
-        <div class="progress-elapsed" id="progress-elapsed">0s elapsed</div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+
+    <!-- Center: Radar + Leaderboard -->
+    <div class="center-row">
+
+      <!-- Radar chart -->
+      <div class="glass-card">
+        <div class="card-title">
+          <span class="card-title-icon">◈</span>
+          Capability Radar
+        </div>
+        <div class="radar-wrap" id="radar-wrap">
+          <div class="empty-state">
+            <div class="empty-state-icon">◎</div>
+            <p>Run an evaluation to<br>populate the radar chart.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="glass-card">
+        <div class="card-title">
+          <span class="card-title-icon">▲</span>
+          Leaderboard
+        </div>
+        <div class="lb-table-wrap" id="lb-table-wrap">
+          <div class="empty-state">
+            <div class="empty-state-icon">◻</div>
+            <p>Leaderboard will appear<br>after first evaluation run.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Test Case Inspector -->
+    <div class="inspector-card">
+      <div class="card-title">
+        <span class="card-title-icon">⊡</span>
+        Test Case Inspector
+      </div>
+      <div class="inspector-controls">
+        <select class="styled-select" id="inspector-scenario-select" onchange="renderInspector()">
+          <option value="">Select a scenario...</option>
+        </select>
+        <span style="font-size:11px;color:var(--text-muted)">3-way model comparison</span>
+      </div>
+      <div id="inspector-body">
+        <div class="empty-state">
+          <div class="empty-state-icon">⊙</div>
+          <p>Run an evaluation, then select a scenario<br>to compare model responses side-by-side.</p>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- ============================================================
-       RESULTS
-  ============================================================ -->
-  <section class="results-section" id="results-section">
+  </main>
 
-    <!-- Winner banner -->
-    <div class="winner-banner" id="winner-banner">
-      <h2 id="winner-headline">Results</h2>
-      <div class="winner-sub" id="winner-sub"></div>
-    </div>
+</div><!-- /.shell -->
 
-    <!-- Score comparison -->
-    <div class="section-label">
-      <i data-lucide="bar-chart-3" style="width:12px;height:12px"></i>
-      Rubric Scores
-    </div>
-    <div class="card rubric-section" id="rubric-comparison">
-      <!-- Populated by JS -->
-    </div>
-
-    <!-- Regressions -->
-    <div id="regressions-area" style="margin-bottom:2rem"></div>
-
-    <!-- Raw results table -->
-    <div class="raw-table-section">
-      <div class="section-label">
-        <i data-lucide="table-2" style="width:12px;height:12px"></i>
-        Scenario Results
-      </div>
-      <div class="card" style="padding:0;overflow:hidden">
-        <table class="results-table" id="results-table">
-          <thead>
-            <tr>
-              <th>Scenario</th>
-              <th>Model A</th>
-              <th>Model B</th>
-              <th>Winner</th>
-            </tr>
-          </thead>
-          <tbody id="results-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- ============================================================
-       LEADERBOARD
-  ============================================================ -->
-  <section class="leaderboard-section">
-    <div class="section-label">
-      <i data-lucide="trophy" style="width:12px;height:12px"></i>
-      Leaderboard
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div id="leaderboard-inner">
-        <div class="lb-empty">Run your first evaluation to populate the leaderboard.</div>
-      </div>
-    </div>
-  </section>
-
-</div><!-- /.page -->
+<!-- Radar tooltip -->
+<div class="radar-tooltip" id="radar-tooltip"></div>
 
 <!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
@@ -756,493 +980,688 @@ input[type="text"]::placeholder { color: var(--stone); }
      JAVASCRIPT
 ============================================================ -->
 <script>
-lucide.createIcons();
+// ===================================================================
+// MODEL CATALOG
+// ===================================================================
+const MODEL_CATALOG = [
+  { id: "gpt-4o",              label: "GPT-4o",           color: "#22c55e",  tier: "Flagship"  },
+  { id: "claude-3-5-sonnet",   label: "Claude 3.5 Sonnet",color: "#a78bfa",  tier: "Flagship"  },
+  { id: "gemini-1.5-pro",      label: "Gemini 1.5 Pro",   color: "#3b82f6",  tier: "Pro"       },
+  { id: "gpt-3.5-turbo",       label: "GPT-3.5 Turbo",    color: "#f59e0b",  tier: "Fast"      },
+  { id: "llama-3-70b",         label: "Llama 3 70B",       color: "#06b6d4",  tier: "Open"      },
+  { id: "mistral-large",       label: "Mistral Large",     color: "#ec4899",  tier: "Open"      },
+  { id: "claude-3-opus",       label: "Claude 3 Opus",     color: "#f97316",  tier: "Flagship"  },
+  { id: "llama-3-8b",          label: "Llama 3 8B",        color: "#8b5cf6",  tier: "Open"      },
+];
+
+const MODEL_COLOR_MAP = Object.fromEntries(MODEL_CATALOG.map(m => [m.id, m.color]));
 
 // ===================================================================
 // STATE
 // ===================================================================
-const API = '';
-let currentRunId   = null;
-let pollInterval   = null;
-let elapsedTimer   = null;
-let elapsedSeconds = 0;
-let allScenarios   = [];
+let selectedModels  = new Set(["gpt-4o", "claude-3-5-sonnet", "gemini-1.5-pro"]);
 let selectedScenarios = new Set();
-let lastResults    = null;
+let allScenarios    = [];
+let lastResults     = null;   // { model_id: { overall, radar, scenarios, ... } }
+let cancelRequested = false;
+let activeEventSource = null;
+let sortCol         = "overall";
+let sortAsc         = false;
 
 // ===================================================================
 // INIT
 // ===================================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  renderModelList();
   loadScenarios();
-  loadLeaderboard();
+  loadLatestResults();
 });
+
+// ===================================================================
+// MODEL LIST
+// ===================================================================
+function renderModelList() {
+  const list = document.getElementById("model-list");
+  list.innerHTML = MODEL_CATALOG.map(m => {
+    const sel = selectedModels.has(m.id);
+    const tierColor = m.tier === "Flagship" ? "var(--green)" :
+                      m.tier === "Pro" ? "var(--purple-mid)" :
+                      m.tier === "Fast" ? "var(--orange)" : "var(--cyan)";
+    const tierBg = m.tier === "Flagship" ? "var(--green-dim)" :
+                   m.tier === "Pro" ? "var(--purple-dim)" :
+                   m.tier === "Fast" ? "var(--orange-dim)" : "var(--cyan-dim)";
+    return `
+    <label class="model-check-row ${sel ? "selected" : ""}" data-model="${m.id}" onclick="toggleModel('${m.id}', this)">
+      <input type="checkbox" ${sel ? "checked" : ""}>
+      <div class="check-icon">
+        <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+          <path d="M2 5l2.5 2.5L8 2.5" stroke="#050508" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="model-color-dot" style="background:${m.color}; box-shadow: 0 0 6px ${m.color}44"></span>
+      <span class="model-name-text">${m.label}</span>
+      <span class="model-badge" style="background:${tierBg};color:${tierColor};border:1px solid ${tierColor}33">${m.tier}</span>
+    </label>`;
+  }).join("");
+}
+
+function toggleModel(id, el) {
+  if (selectedModels.has(id)) {
+    if (selectedModels.size <= 1) { toast("Select at least 1 model.", "error"); return; }
+    selectedModels.delete(id);
+    el.classList.remove("selected");
+  } else {
+    selectedModels.add(id);
+    el.classList.add("selected");
+  }
+}
 
 // ===================================================================
 // SCENARIOS
 // ===================================================================
 async function loadScenarios() {
   try {
-    const res  = await fetch(`${API}/api/scenarios`);
+    const res  = await fetch("/api/scenarios");
     const data = await res.json();
     allScenarios = data.scenarios || [];
-
-    // Default: all selected
-    allScenarios.forEach(sc => selectedScenarios.add(sc.id));
-
-    renderScenarioPills();
-    document.getElementById('run-btn').disabled = false;
-  } catch (e) {
-    document.getElementById('scenario-pills').innerHTML =
-      '<span style="font-size:13px;color:var(--stone)">Could not load scenarios &mdash; is the server running?</span>';
+    allScenarios.forEach(s => selectedScenarios.add(s.id));
+    renderScenarioList();
+    document.getElementById("run-btn").disabled = false;
+  } catch(e) {
+    document.getElementById("scenario-list").innerHTML =
+      '<div style="font-size:11px;color:var(--red)">Could not load scenarios</div>';
   }
 }
 
-function renderScenarioPills() {
-  const container = document.getElementById('scenario-pills');
-  if (allScenarios.length === 0) {
-    container.innerHTML = '<span style="font-size:13px;color:var(--stone);font-style:italic">No scenarios found.</span>';
-    updateCounts();
-    return;
-  }
+function renderScenarioList() {
+  const list = document.getElementById("scenario-list");
+  list.innerHTML = allScenarios.map(s => {
+    const sel = selectedScenarios.has(s.id);
+    const label = s.id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    return `<div class="scenario-item ${sel ? "selected" : ""}" onclick="toggleScenario('${s.id}', this)">
+      <div class="sc-check"></div>
+      <span>${label}</span>
+    </div>`;
+  }).join("");
 
-  container.innerHTML = allScenarios.map(sc => {
-    const active = selectedScenarios.has(sc.id) ? 'selected' : '';
-    const label  = sc.name || sc.id;
-    return `<button class="scenario-pill ${active}" onclick="toggleScenario('${sc.id}', this)" title="${escapeHtml(sc.id)}">
-      <i data-lucide="check" class="pill-check" style="width:11px;height:11px"></i>
-      ${escapeHtml(label)}
-    </button>`;
-  }).join('');
-
-  lucide.createIcons();
-  updateCounts();
+  // Populate inspector select
+  const sel = document.getElementById("inspector-scenario-select");
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Select a scenario...</option>' +
+    allScenarios.map(s => {
+      const label = s.id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      return `<option value="${s.id}">${label}</option>`;
+    }).join("");
+  if (prev) sel.value = prev;
 }
 
 function toggleScenario(id, el) {
   if (selectedScenarios.has(id)) {
     selectedScenarios.delete(id);
-    el.classList.remove('selected');
+    el.classList.remove("selected");
+    el.querySelector(".sc-check").style.background = "";
   } else {
     selectedScenarios.add(id);
-    el.classList.add('selected');
+    el.classList.add("selected");
+    el.querySelector(".sc-check").style.background = "var(--green)";
+    el.querySelector(".sc-check").style.borderColor = "var(--green)";
   }
-  updateCounts();
-  lucide.createIcons();
 }
 
-function selectAll() {
-  allScenarios.forEach(sc => selectedScenarios.add(sc.id));
-  renderScenarioPills();
-}
+document.getElementById("sc-toggle-all").addEventListener("click", () => {
+  const allSelected = allScenarios.every(s => selectedScenarios.has(s.id));
+  if (allSelected) {
+    selectedScenarios.clear();
+  } else {
+    allScenarios.forEach(s => selectedScenarios.add(s.id));
+  }
+  renderScenarioList();
+});
 
-function selectNone() {
-  selectedScenarios.clear();
-  renderScenarioPills();
-}
-
-function updateCounts() {
-  document.getElementById('selected-count').textContent = selectedScenarios.size;
-  document.getElementById('total-count').textContent    = allScenarios.length;
+// ===================================================================
+// LOAD LATEST
+// ===================================================================
+async function loadLatestResults() {
+  try {
+    const res  = await fetch("/api/results/latest");
+    const data = await res.json();
+    if (data.results && Object.keys(data.results).length > 0) {
+      lastResults = data.results;
+      renderAll(lastResults);
+      toast("Loaded previous run results.", "info");
+    }
+  } catch(_) {}
 }
 
 // ===================================================================
-// RUN EVALUATION
+// RUN EVALUATION (SSE)
 // ===================================================================
 async function startRun() {
-  const modelA     = document.getElementById('model-a-input').value.trim() || 'gpt-4o';
-  const modelB     = document.getElementById('model-b-input').value.trim() || 'gpt-3.5-turbo';
-  const nRuns      = parseInt(document.getElementById('n-runs-input').value) || 1;
+  const models = [...selectedModels];
   const scenarioIds = [...selectedScenarios];
 
-  if (scenarioIds.length === 0) {
-    toast('Select at least one scenario to evaluate.', 'error');
-    return;
-  }
+  if (models.length === 0) { toast("Select at least one model.", "error"); return; }
+  if (scenarioIds.length === 0) { toast("Select at least one scenario.", "error"); return; }
 
-  const btn = document.getElementById('run-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Starting&hellip;';
+  cancelRequested = false;
+  lastResults = null;
 
-  // Hide previous results
-  document.getElementById('results-section').classList.remove('visible');
-  document.getElementById('progress-section').classList.add('visible');
-
-  // Reset elapsed timer
-  elapsedSeconds = 0;
-  clearInterval(elapsedTimer);
-  updateElapsed();
-  elapsedTimer = setInterval(() => {
-    elapsedSeconds++;
-    updateElapsed();
-  }, 1000);
+  // UI
+  document.getElementById("run-btn").disabled = true;
+  document.getElementById("run-btn").innerHTML =
+    '<span class="spinner"></span> Running...';
+  document.getElementById("cancel-btn").classList.add("visible");
+  document.getElementById("progress-wrap").classList.add("visible");
+  document.getElementById("live-log").classList.add("visible");
+  document.getElementById("progress-fill").style.width = "0%";
+  document.getElementById("live-log").innerHTML = "";
+  document.getElementById("run-status-badge").textContent = "Running";
+  document.getElementById("run-status-badge").style.background = "var(--orange-dim)";
+  document.getElementById("run-status-badge").style.color = "var(--orange)";
+  document.getElementById("run-status-badge").style.borderColor = "rgba(245,158,11,0.2)";
 
   try {
-    const res  = await fetch(`${API}/api/eval/run`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ model_a: modelA, model_b: modelB, scenario_ids: scenarioIds, n_runs: nRuns }),
+    // Use fetch + ReadableStream for SSE POST
+    const response = await fetch("/api/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ models, scenario_ids: scenarioIds }),
     });
-    const data = await res.json();
-    currentRunId = data.run_id;
 
-    pollInterval = setInterval(pollStatus, 1500);
-    toast('Evaluation started.', 'success');
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status}`);
+    }
 
-  } catch (e) {
-    toast('Failed to start: ' + e.message, 'error');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      if (cancelRequested) break;
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        try {
+          const ev = JSON.parse(line.slice(6));
+          handleSSEEvent(ev);
+        } catch(_) {}
+      }
+    }
+
+  } catch(e) {
+    if (!cancelRequested) {
+      toast("Evaluation failed: " + e.message, "error");
+    }
+  } finally {
     resetRunBtn();
-    document.getElementById('progress-section').classList.remove('visible');
   }
 }
 
-function updateElapsed() {
-  const m = Math.floor(elapsedSeconds / 60);
-  const s = elapsedSeconds % 60;
-  const label = m > 0 ? `${m}m ${s}s elapsed` : `${s}s elapsed`;
-  document.getElementById('progress-elapsed').textContent = label;
+function handleSSEEvent(ev) {
+  if (ev.event === "progress") {
+    // Update progress bar
+    const pct = ev.pct || 0;
+    document.getElementById("progress-fill").style.width = pct + "%";
+    document.getElementById("progress-pct-text").textContent = pct + "%";
+
+    const modelLabel = MODEL_CATALOG.find(m => m.id === ev.model)?.label || ev.model;
+    const color = MODEL_COLOR_MAP[ev.model] || "var(--green)";
+    document.getElementById("progress-label-text").textContent =
+      `${modelLabel} — ${ev.scenario.replace(/_/g,' ')}`;
+
+    // Live log
+    const log = document.getElementById("live-log");
+    const line = document.createElement("div");
+    line.innerHTML =
+      `<span style="color:${color};font-weight:600">${modelLabel.substring(0,14)}</span>` +
+      ` / <span style="color:var(--text-muted)">${ev.scenario.replace(/_/g,' ')}</span>` +
+      ` → <span style="color:var(--green)">${ev.score}</span>`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+
+  } else if (ev.event === "complete") {
+    lastResults = ev.results;
+    renderAll(lastResults);
+    document.getElementById("run-status-badge").textContent = "Complete";
+    document.getElementById("run-status-badge").style.background = "var(--green-dim)";
+    document.getElementById("run-status-badge").style.color = "var(--green)";
+    document.getElementById("run-status-badge").style.borderColor = "rgba(34,197,94,0.2)";
+    document.getElementById("run-ts").textContent = new Date().toLocaleTimeString();
+    toast("Evaluation complete!", "success");
+
+  } else if (ev.event === "error") {
+    toast("Error: " + (ev.message || "Unknown error"), "error");
+  }
 }
 
-async function pollStatus() {
-  if (!currentRunId) return;
-  try {
-    const res    = await fetch(`${API}/api/eval/${currentRunId}/status`);
-    const status = await res.json();
-
-    const pct = status.progress || 0;
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-text').textContent = status.message || 'Running\u2026';
-
-    if (status.status === 'complete') {
-      clearInterval(pollInterval);
-      clearInterval(elapsedTimer);
-      await loadResults();
-      resetRunBtn();
-
-    } else if (status.status === 'error') {
-      clearInterval(pollInterval);
-      clearInterval(elapsedTimer);
-      toast('Evaluation error: ' + (status.message || 'unknown'), 'error');
-      document.getElementById('progress-section').classList.remove('visible');
-      resetRunBtn();
-    }
-  } catch (_) { /* keep polling on network hiccup */ }
+function cancelRun() {
+  cancelRequested = true;
+  resetRunBtn();
+  toast("Evaluation cancelled.", "info");
 }
 
 function resetRunBtn() {
-  const btn = document.getElementById('run-btn');
-  btn.disabled = false;
-  btn.innerHTML = '<i data-lucide="play" style="width:16px;height:16px"></i> Run Evaluation';
-  lucide.createIcons();
+  document.getElementById("run-btn").disabled = false;
+  document.getElementById("run-btn").innerHTML =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
+  document.getElementById("cancel-btn").classList.remove("visible");
+  document.getElementById("progress-wrap").classList.remove("visible");
+  document.getElementById("live-log").classList.remove("visible");
 }
 
 // ===================================================================
-// LOAD & RENDER RESULTS
+// RENDER ALL
 // ===================================================================
-async function loadResults() {
-  try {
-    const res  = await fetch(`${API}/api/eval/${currentRunId}/results`);
-    const data = await res.json();
-    lastResults = data;
-
-    document.getElementById('progress-section').classList.remove('visible');
-    document.getElementById('results-section').classList.add('visible');
-
-    renderWinnerBanner(data);
-    renderRubricComparison(data);
-    renderRegressions(data);
-    renderRawTable(data);
-    loadLeaderboard();
-
-  } catch (e) {
-    toast('Could not load results: ' + e.message, 'error');
-    document.getElementById('progress-section').classList.remove('visible');
+function renderAll(results) {
+  renderKPIs(results);
+  renderRadar(results);
+  renderLeaderboard(results);
+  // Auto-select first scenario for inspector
+  const firstScenario = getFirstScenarioId(results);
+  if (firstScenario) {
+    document.getElementById("inspector-scenario-select").value = firstScenario;
   }
+  renderInspector();
 }
 
-// -----------------------------------------------------------------------
-// WINNER BANNER
-// -----------------------------------------------------------------------
-function renderWinnerBanner(data) {
-  const { summary } = data;
-  const modelA = data.model_a;
-  const modelB = data.model_b;
-  const mA = summary?.models?.[modelA];
-  const mB = summary?.models?.[modelB];
-
-  if (!mA || !mB) {
-    document.getElementById('winner-headline').textContent = 'Results';
-    document.getElementById('winner-sub').textContent = '';
-    return;
-  }
-
-  const rubrics   = Object.keys(mA.rubrics || {});
-  let aWins = 0, bWins = 0, ties = 0;
-
-  rubrics.forEach(r => {
-    const ra = mA.rubrics[r]?.mean || 0;
-    const rb = mB.rubrics[r]?.mean || 0;
-    if (ra > rb + 0.05) aWins++;
-    else if (rb > ra + 0.05) bWins++;
-    else ties++;
-  });
-
-  const totalRubrics = rubrics.length;
-  let headline = '';
-  let sub = '';
-
-  if (aWins > bWins) {
-    headline = `${modelA} leads on ${aWins}/${totalRubrics} rubric${aWins !== 1 ? 's' : ''}`;
-    const topRubric = findBestDeltaRubric(mA, mB);
-    if (topRubric) {
-      sub = `${modelA} edges ahead on ${topRubric}`;
+function getFirstScenarioId(results) {
+  for (const model of Object.values(results)) {
+    if (model.scenarios && model.scenarios.length > 0) {
+      return model.scenarios[0].scenario_id;
     }
-  } else if (bWins > aWins) {
-    headline = `${modelB} leads on ${bWins}/${totalRubrics} rubric${bWins !== 1 ? 's' : ''}`;
-    const topRubric = findBestDeltaRubric(mB, mA);
-    if (topRubric) {
-      sub = `${modelB} edges ahead on ${topRubric}`;
-    }
-  } else {
-    const drawRubrics = rubrics.filter(r => {
-      const ra = mA.rubrics[r]?.mean || 0;
-      const rb = mB.rubrics[r]?.mean || 0;
-      return Math.abs(ra - rb) <= 0.05;
-    });
-    if (drawRubrics.length === totalRubrics) {
-      headline = `Draw across all ${totalRubrics} rubric${totalRubrics !== 1 ? 's' : ''}`;
-    } else {
-      headline = `Draw on ${drawRubrics.map(r => r.replace(/_/g, ' ')).join(' and ')}`;
-    }
-    sub = 'Models are statistically equivalent on these rubrics';
+  }
+  return null;
+}
+
+// ===================================================================
+// KPIs
+// ===================================================================
+function renderKPIs(results) {
+  const models = Object.keys(results);
+  const totalModels = models.length;
+  const totalCases = models.reduce((sum, m) => sum + (results[m].scenarios?.length || 0), 0);
+
+  let topModel = null, topScore = -Infinity;
+  let scoreSum = 0, scoreCount = 0;
+  for (const [mid, data] of Object.entries(results)) {
+    const score = data.overall || 0;
+    scoreSum += score;
+    scoreCount++;
+    if (score > topScore) { topScore = score; topModel = mid; }
   }
 
-  document.getElementById('winner-headline').textContent = headline;
-  document.getElementById('winner-sub').textContent      = sub;
+  const avgScore = scoreCount > 0 ? (scoreSum / scoreCount).toFixed(1) : "—";
+  const topLabel = MODEL_CATALOG.find(m => m.id === topModel)?.label || topModel || "—";
+
+  document.getElementById("kpi-models").textContent = totalModels || "—";
+  document.getElementById("kpi-models-sub").textContent =
+    totalModels > 0 ? `${totalModels} model${totalModels !== 1 ? "s" : ""} evaluated` : "No run yet";
+  document.getElementById("kpi-cases").textContent = totalCases || "—";
+  document.getElementById("kpi-cases-sub").textContent =
+    totalCases > 0 ? `${allScenarios.length} scenarios selected` : "Across all scenarios";
+  document.getElementById("kpi-top").textContent = topLabel || "—";
+  document.getElementById("kpi-top-sub").textContent =
+    topScore > 0 ? `Score: ${topScore.toFixed(1)}` : "Score: —";
+  document.getElementById("kpi-avg").textContent = avgScore;
 }
 
-function findBestDeltaRubric(winner, loser) {
-  const rubrics = Object.keys(winner.rubrics || {});
-  let best = null, bestDelta = 0;
-  rubrics.forEach(r => {
-    const delta = (winner.rubrics[r]?.mean || 0) - (loser.rubrics[r]?.mean || 0);
-    if (delta > bestDelta) { bestDelta = delta; best = r; }
-  });
-  return best ? best.replace(/_/g, ' ') : null;
-}
+// ===================================================================
+// RADAR CHART (pure SVG)
+// ===================================================================
+const RADAR_AXES = ["Accuracy", "Coherence", "Factuality", "Safety", "Tool Use", "Reasoning"];
 
-// -----------------------------------------------------------------------
-// RUBRIC COMPARISON BARS
-// -----------------------------------------------------------------------
-const RUBRIC_DISPLAY = {
-  faithfulness:   'Faithfulness',
-  relevance:      'Relevance',
-  coherence:      'Coherence',
-  completeness:   'Completeness',
-};
+function renderRadar(results) {
+  const models = Object.keys(results);
+  if (!models.length) return;
 
-function rubricLabel(r) {
-  return RUBRIC_DISPLAY[r] || r.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
+  const wrap = document.getElementById("radar-wrap");
+  const N = RADAR_AXES.length;
+  const CX = 140, CY = 140, R = 105;
+  const levels = 5;
 
-function renderRubricComparison(data) {
-  const { summary } = data;
-  const modelA = data.model_a;
-  const modelB = data.model_b;
-  const mA = summary?.models?.[modelA];
-  const mB = summary?.models?.[modelB];
-  const container = document.getElementById('rubric-comparison');
+  // Compute angle for each axis
+  const angle = (i) => (Math.PI * 2 * i / N) - Math.PI / 2;
 
-  if (!mA || !mB) {
-    container.innerHTML = '<div style="color:var(--stone);font-size:13px;padding:0.5rem">No rubric data available.</div>';
-    return;
-  }
+  // Grid polygon points for a given radius
+  const gridPoly = (r) => Array.from({length: N}, (_, i) => {
+    const a = angle(i);
+    return `${CX + r * Math.cos(a)},${CY + r * Math.sin(a)}`;
+  }).join(" ");
 
-  const rubrics = [...new Set([...Object.keys(mA.rubrics || {}), ...Object.keys(mB.rubrics || {})])];
+  // Data polygon for a model
+  const dataPoly = (model_data) => {
+    const radar = model_data.radar || {};
+    return Array.from({length: N}, (_, i) => {
+      const val = (radar[RADAR_AXES[i]] || 0) / 10.0;
+      const r = val * R;
+      const a = angle(i);
+      return `${CX + r * Math.cos(a)},${CY + r * Math.sin(a)}`;
+    }).join(" ");
+  };
 
-  const preferred = ['faithfulness', 'relevance', 'coherence', 'completeness'];
-  rubrics.sort((a, b) => {
-    const ia = preferred.indexOf(a);
-    const ib = preferred.indexOf(b);
-    if (ia !== -1 && ib !== -1) return ia - ib;
-    if (ia !== -1) return -1;
-    if (ib !== -1) return 1;
-    return a.localeCompare(b);
-  });
+  // Build SVG
+  let svg = `<svg id="radar-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      ${models.map((mid, mi) => {
+        const color = MODEL_COLOR_MAP[mid] || "#22c55e";
+        return `<radialGradient id="rg${mi}" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0.04"/>
+        </radialGradient>`;
+      }).join("")}
+    </defs>
 
-  container.innerHTML = rubrics.map(r => {
-    const ra = mA.rubrics[r]?.mean || 0;
-    const rb = mB.rubrics[r]?.mean || 0;
-    const pctA = Math.min(100, (ra / 10) * 100).toFixed(1);
-    const pctB = Math.min(100, (rb / 10) * 100).toFixed(1);
+    <!-- Grid rings -->
+    ${Array.from({length: levels}, (_, i) => {
+      const r = R * (i + 1) / levels;
+      return `<polygon points="${gridPoly(r)}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    }).join("")}
 
-    let winnerTag = '';
-    let winnerClass = '';
-    if (ra > rb + 0.05) {
-      winnerTag   = modelA;
-      winnerClass = 'rubric-winner-a';
-    } else if (rb > ra + 0.05) {
-      winnerTag   = modelB;
-      winnerClass = 'rubric-winner-b';
-    } else {
-      winnerTag   = 'Tie';
-      winnerClass = 'rubric-winner-tie';
-    }
+    <!-- Axis lines -->
+    ${Array.from({length: N}, (_, i) => {
+      const a = angle(i);
+      const x2 = CX + R * Math.cos(a);
+      const y2 = CY + R * Math.sin(a);
+      return `<line x1="${CX}" y1="${CY}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+        stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
+    }).join("")}
 
-    return `<div class="rubric-row">
-      <div>
-        <div class="rubric-name">${rubricLabel(r)}</div>
-        <div class="rubric-winner-tag ${winnerClass}">${escapeHtml(winnerTag)}</div>
-      </div>
-      <div class="rubric-bars">
-        <div class="bar-line">
-          <div class="bar-model-label">A</div>
-          <div class="bar-track"><div class="bar-fill bar-fill-a" style="width:${pctA}%"></div></div>
-          <div class="bar-score bar-score-a">${ra.toFixed(1)}</div>
-        </div>
-        <div class="bar-line">
-          <div class="bar-model-label">B</div>
-          <div class="bar-track"><div class="bar-fill bar-fill-b" style="width:${pctB}%"></div></div>
-          <div class="bar-score bar-score-b">${rb.toFixed(1)}</div>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--stone);text-align:right;white-space:nowrap">
-        /10
-      </div>
-    </div>`;
-  }).join('');
-}
+    <!-- Level labels -->
+    ${Array.from({length: levels}, (_, i) => {
+      const r = R * (i + 1) / levels;
+      const val = ((i + 1) * 2).toFixed(0);
+      return `<text x="${CX + 4}" y="${CY - r + 4}" font-size="7" fill="rgba(255,255,255,0.2)"
+        font-family="JetBrains Mono, monospace">${val}</text>`;
+    }).join("")}
 
-// -----------------------------------------------------------------------
-// REGRESSIONS
-// -----------------------------------------------------------------------
-function renderRegressions(data) {
-  const regressions = data.regressions || [];
-  const area = document.getElementById('regressions-area');
+    <!-- Data polygons -->
+    ${models.map((mid, mi) => {
+      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
+      const pts = dataPoly(results[mid]);
+      return `<polygon points="${pts}" fill="url(#rg${mi})" stroke="${color}"
+        stroke-width="1.5" opacity="0.9"
+        class="radar-poly" data-model="${escHtml(mid)}"
+        style="cursor:pointer;filter:drop-shadow(0 0 4px ${color}55)"
+        onmouseenter="showRadarTooltip(event,'${escHtml(mid)}')"
+        onmousemove="moveRadarTooltip(event)"
+        onmouseleave="hideRadarTooltip()"/>
+      ${Array.from({length: N}, (_, i) => {
+        const radar = results[mid].radar || {};
+        const val = (radar[RADAR_AXES[i]] || 0) / 10.0;
+        const r = val * R;
+        const a = angle(i);
+        const px = CX + r * Math.cos(a);
+        const py = CY + r * Math.sin(a);
+        return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3"
+          fill="${color}" stroke="var(--bg)" stroke-width="1.5"
+          style="filter:drop-shadow(0 0 4px ${color})"
+          onmouseenter="showRadarTooltip(event,'${escHtml(mid)}')"
+          onmousemove="moveRadarTooltip(event)"
+          onmouseleave="hideRadarTooltip()"/>`;
+      }).join("")}`;
+    }).join("")}
 
-  if (regressions.length === 0) {
-    area.innerHTML = '';
-    return;
-  }
+    <!-- Axis labels -->
+    ${Array.from({length: N}, (_, i) => {
+      const a = angle(i);
+      const dist = R + 18;
+      const lx = CX + dist * Math.cos(a);
+      const ly = CY + dist * Math.sin(a);
+      const anchor = Math.abs(Math.cos(a)) < 0.1 ? "middle" :
+                     Math.cos(a) > 0 ? "start" : "end";
+      return `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}"
+        text-anchor="${anchor}" font-size="9.5" fill="rgba(255,255,255,0.55)"
+        font-family="Inter, sans-serif" font-weight="600">${RADAR_AXES[i]}</text>`;
+    }).join("")}
 
-  area.innerHTML = `
-    <div class="section-label">
-      <i data-lucide="alert-triangle" style="width:12px;height:12px"></i>
-      Regressions Detected
-    </div>
-    ${regressions.map(reg => {
-      const rubric  = reg.rubric?.replace(/_/g, ' ') || 'unknown rubric';
-      const delta   = Math.abs(reg.delta || 0).toFixed(2);
-      const modelB  = data.model_b;
-      return `<div class="regression-alert">
-        <div class="regression-alert-icon"><i data-lucide="alert-circle" style="width:16px;height:16px"></i></div>
-        <div class="regression-alert-text">
-          <strong>${escapeHtml(modelB)}</strong> scores <strong>${delta} points lower</strong> on ${rubric} &mdash; potential regression.
-        </div>
+  </svg>`;
+
+  // Legend
+  let legend = `<div class="radar-legend">` +
+    models.map(mid => {
+      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
+      const label = MODEL_CATALOG.find(m => m.id === mid)?.label || mid;
+      return `<div class="radar-legend-item">
+        <span class="radar-legend-dot" style="background:${color};box-shadow:0 0 6px ${color}88"></span>
+        <span>${label}</span>
       </div>`;
-    }).join('')}
-  `;
-  lucide.createIcons();
+    }).join("") + `</div>`;
+
+  wrap.innerHTML = svg + legend;
 }
 
-// -----------------------------------------------------------------------
-// RAW RESULTS TABLE
-// -----------------------------------------------------------------------
-function renderRawTable(data) {
-  const modelA   = data.model_a;
-  const modelB   = data.model_b;
-  const resultsA = data.results_a || [];
-  const resultsB = data.results_b || [];
+function showRadarTooltip(e, modelId) {
+  if (!lastResults || !lastResults[modelId]) return;
+  const color = MODEL_COLOR_MAP[modelId] || "#22c55e";
+  const label = MODEL_CATALOG.find(m => m.id === modelId)?.label || modelId;
+  const radar = lastResults[modelId].radar || {};
+  const tt = document.getElementById("radar-tooltip");
+  tt.innerHTML = `<div class="radar-tooltip-model" style="color:${color}">${label}</div>` +
+    RADAR_AXES.map(ax =>
+      `<div class="radar-tooltip-row"><span>${ax}</span><span>${(radar[ax] || 0).toFixed(1)}/10</span></div>`
+    ).join("");
+  tt.classList.add("visible");
+  moveRadarTooltip(e);
+}
 
-  const scenarioIds = [...new Set([...resultsA.map(r => r.scenario_id), ...resultsB.map(r => r.scenario_id)])];
+function moveRadarTooltip(e) {
+  const tt = document.getElementById("radar-tooltip");
+  tt.style.left = (e.clientX + 14) + "px";
+  tt.style.top  = (e.clientY - 10) + "px";
+}
 
-  document.getElementById('results-tbody').innerHTML = scenarioIds.map(sid => {
-    const rA    = resultsA.find(r => r.scenario_id === sid);
-    const rB    = resultsB.find(r => r.scenario_id === sid);
-    const sA    = rA?.weighted_total ?? rA?.avg_score ?? null;
-    const sB    = rB?.weighted_total ?? rB?.avg_score ?? null;
-
-    let winnerText = '&mdash;';
-    let winnerClass = 'winner-cell-tie';
-    if (sA !== null && sB !== null) {
-      if (sA > sB + 0.05)       { winnerText = escapeHtml(modelA); winnerClass = 'winner-cell-a'; }
-      else if (sB > sA + 0.05)  { winnerText = escapeHtml(modelB); winnerClass = 'winner-cell-b'; }
-      else                       { winnerText = 'Tie'; }
-    }
-
-    return `<tr>
-      <td style="font-family:monospace;font-size:12px">${escapeHtml(sid)}</td>
-      <td style="color:var(--teal);font-weight:600">${sA !== null ? sA.toFixed(2) : '&mdash;'}</td>
-      <td style="color:var(--accent);font-weight:600">${sB !== null ? sB.toFixed(2) : '&mdash;'}</td>
-      <td class="${winnerClass}">${winnerText}</td>
-    </tr>`;
-  }).join('');
+function hideRadarTooltip() {
+  document.getElementById("radar-tooltip").classList.remove("visible");
 }
 
 // ===================================================================
 // LEADERBOARD
 // ===================================================================
-async function loadLeaderboard() {
-  try {
-    const res     = await fetch(`${API}/api/leaderboard`);
-    const data    = await res.json();
-    const entries = data.leaderboard || [];
-    const inner   = document.getElementById('leaderboard-inner');
+const LB_COLS = [
+  { key: "#",       label: "#",         sortable: false },
+  { key: "model",   label: "Model",     sortable: true  },
+  { key: "overall", label: "Overall",   sortable: true  },
+  { key: "Accuracy",    label: "Accuracy",    sortable: true },
+  { key: "Coherence",   label: "Coherence",   sortable: true },
+  { key: "Factuality",  label: "Factuality",  sortable: true },
+  { key: "Safety",      label: "Safety",      sortable: true },
+  { key: "Tool Use",    label: "Tool Use",    sortable: true },
+];
 
-    if (entries.length === 0) {
-      inner.innerHTML = '<div class="lb-empty">Run your first evaluation to populate the leaderboard.</div>';
-      return;
-    }
+function renderLeaderboard(results) {
+  const wrap = document.getElementById("lb-table-wrap");
+  const models = Object.keys(results);
+  if (!models.length) return;
 
-    inner.innerHTML = `
-      <table class="lb-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Model</th>
-            <th>Avg Score</th>
-            <th>Runs</th>
-            <th>Best Rubric</th>
-            <th>Worst Rubric</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${entries.map((e, i) => {
-            const rankClass = i === 0 ? 'lb-rank lb-rank-1' : 'lb-rank';
-            const medal = ['1st', '2nd', '3rd'][i] || `${i + 1}th`;
-            return `<tr>
-              <td class="${rankClass}">${medal}</td>
-              <td class="lb-model">${escapeHtml(e.model)}</td>
-              <td class="lb-score">${(e.avg_weighted_total || e.avg_score || 0).toFixed(2)}</td>
-              <td class="lb-runs">${e.runs_evaluated ?? e.runs ?? '&mdash;'}</td>
-              <td class="lb-best">${(e.top_rubric || e.best_rubric || '&mdash;').replace(/_/g, ' ')}</td>
-              <td class="lb-worst">${(e.worst_rubric || '&mdash;').replace(/_/g, ' ')}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>`;
-  } catch (_) { /* server not ready */ }
+  // Build rows
+  let rows = models.map(mid => {
+    const data = results[mid];
+    const radar = data.radar || {};
+    return {
+      model: mid,
+      label: MODEL_CATALOG.find(m => m.id === mid)?.label || mid,
+      color: MODEL_COLOR_MAP[mid] || "#22c55e",
+      overall: data.overall || 0,
+      ...Object.fromEntries(RADAR_AXES.map(ax => [ax, radar[ax] || 0])),
+    };
+  });
+
+  // Sort
+  rows.sort((a, b) => {
+    let va = a[sortCol], vb = b[sortCol];
+    if (typeof va === "string") va = va.toLowerCase();
+    if (typeof vb === "string") vb = vb.toLowerCase();
+    return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
+  });
+
+  const medalClass = (i) => i === 0 ? "gold-row" : i === 1 ? "silver-row" : i === 2 ? "bronze-row" : "";
+  const rankEmoji  = (i) => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}`;
+  const rankClass  = (i) => i === 0 ? "rank-gold" : i === 1 ? "rank-silver" : i === 2 ? "rank-bronze" : "";
+
+  const maxOverall = Math.max(...rows.map(r => r.overall), 1);
+
+  const scoreBar = (val, max) => {
+    const pct = Math.min(100, (val / max) * 100).toFixed(1);
+    const displayVal = typeof val === "number" ? val.toFixed(1) : val;
+    return `<div class="score-bar-cell">
+      <div class="score-bar-track">
+        <div class="score-bar-fill" style="width:${pct}%;background:var(--green)"></div>
+      </div>
+      <span class="score-bar-num">${displayVal}</span>
+    </div>`;
+  };
+
+  const dimBar = (val) => {
+    const pct = Math.min(100, val * 10).toFixed(1);
+    const color = val >= 8 ? "var(--green)" : val >= 6 ? "var(--orange)" : "var(--red)";
+    return `<div class="score-bar-cell">
+      <div class="score-bar-track">
+        <div class="score-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <span class="score-bar-num" style="color:${color}">${val.toFixed(1)}</span>
+    </div>`;
+  };
+
+  wrap.innerHTML = `<table class="lb-table">
+    <thead><tr>
+      ${LB_COLS.map(c => {
+        if (!c.sortable) return `<th>${c.label}</th>`;
+        const isSorted = sortCol === c.key;
+        return `<th class="${isSorted ? "sorted" : ""}" onclick="sortLeaderboard('${c.key}')">
+          ${c.label}
+          <span class="sort-arrow">${isSorted ? (sortAsc ? "↑" : "↓") : ""}</span>
+        </th>`;
+      }).join("")}
+    </tr></thead>
+    <tbody>
+      ${rows.map((row, i) =>
+        `<tr class="${medalClass(i)}" onclick="highlightModel('${escHtml(row.model)}')">
+          <td class="rank-cell ${rankClass(i)}">${rankEmoji(i)}</td>
+          <td><div class="model-dot-cell">
+            <span style="width:8px;height:8px;border-radius:50%;background:${row.color};
+              box-shadow:0 0 6px ${row.color}88;flex-shrink:0;display:inline-block"></span>
+            ${escHtml(row.label)}
+          </div></td>
+          <td>${scoreBar(row.overall, maxOverall)}</td>
+          ${["Accuracy","Coherence","Factuality","Safety","Tool Use"].map(ax =>
+            `<td>${dimBar(row[ax] || 0)}</td>`
+          ).join("")}
+        </tr>`
+      ).join("")}
+    </tbody>
+  </table>`;
+}
+
+function sortLeaderboard(col) {
+  if (sortCol === col) {
+    sortAsc = !sortAsc;
+  } else {
+    sortCol = col;
+    sortAsc = col === "model";
+  }
+  if (lastResults) renderLeaderboard(lastResults);
+}
+
+function highlightModel(modelId) {
+  // Highlight in radar
+  const polys = document.querySelectorAll(".radar-poly");
+  polys.forEach(p => {
+    p.style.opacity = p.dataset.model === modelId ? "1" : "0.3";
+  });
+  setTimeout(() => polys.forEach(p => p.style.opacity = "0.9"), 2000);
+}
+
+// ===================================================================
+// TEST CASE INSPECTOR
+// ===================================================================
+function renderInspector() {
+  const scenarioId = document.getElementById("inspector-scenario-select").value;
+  const body = document.getElementById("inspector-body");
+
+  if (!lastResults || !scenarioId) {
+    body.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">⊙</div>
+      <p>Run an evaluation, then select a scenario<br>to compare model responses side-by-side.</p>
+    </div>`;
+    return;
+  }
+
+  const models = Object.keys(lastResults).slice(0, 3);
+  if (!models.length) {
+    body.innerHTML = `<div class="empty-state"><p>No models in results.</p></div>`;
+    return;
+  }
+
+  body.innerHTML = `<div class="inspector-grid">
+    ${models.map(mid => {
+      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
+      const label = MODEL_CATALOG.find(m => m.id === mid)?.label || mid;
+      const scenarios = lastResults[mid]?.scenarios || [];
+      const sc = scenarios.find(s => s.scenario_id === scenarioId);
+      if (!sc) {
+        return `<div class="inspector-col">
+          <div class="inspector-model-header">
+            <span class="model-color-dot" style="background:${color}"></span>
+            <span class="inspector-model-name" style="color:${color}">${escHtml(label)}</span>
+          </div>
+          <div class="inspector-response" style="color:var(--text-muted);font-style:italic">
+            No data for this scenario.
+          </div>
+        </div>`;
+      }
+      const score = (sc.score_pct || sc.weighted_total * 10 || 0).toFixed(1);
+      const response = sc.response || "(no response captured)";
+      const reasoning = sc.judge_reasoning || "(no reasoning captured)";
+      const uid = `judge-${mid.replace(/[^a-z0-9]/gi, "_")}_${scenarioId.replace(/[^a-z0-9]/gi, "_")}`;
+      return `<div class="inspector-col">
+        <div class="inspector-model-header">
+          <span class="model-color-dot" style="background:${color}"></span>
+          <span class="inspector-model-name" style="color:${color}">${escHtml(label)}</span>
+          <span class="inspector-score">${score}</span>
+        </div>
+        <div class="inspector-response">${escHtml(response)}</div>
+        <button class="judge-btn" onclick="toggleReasoning('${uid}')">View Judge Reasoning</button>
+        <div class="judge-reasoning" id="${uid}">${escHtml(reasoning)}</div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function toggleReasoning(uid) {
+  const el = document.getElementById(uid);
+  if (el) el.classList.toggle("visible");
 }
 
 // ===================================================================
 // UTILITIES
 // ===================================================================
-function toast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.textContent = message;
-  container.appendChild(el);
-  setTimeout(() => el.remove(), 4500);
+function escHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+function toast(message, type = "info") {
+  const container = document.getElementById("toast-container");
+  const el = document.createElement("div");
+  el.className = "toast " + type;
+  el.innerHTML = `<span class="toast-dot"></span>${escHtml(message)}`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = "0";
+    el.style.transform = "translateY(8px)";
+    el.style.transition = "all 0.2s";
+    setTimeout(() => el.remove(), 200);
+  }, 4000);
 }
 </script>
 </body>
