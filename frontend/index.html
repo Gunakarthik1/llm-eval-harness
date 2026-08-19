@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    DESIGN TOKENS
@@ -41,10 +42,11 @@
   --text-muted:  #475569;
 
   --radius:      10px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
+  --radius-lg:   1.5rem;
+  --radius-xl:   1.5rem;
+  --radius-pill: 50rem;
 
-  --font:        'Inter', system-ui, sans-serif;
+  --font:        'Nunito', 'Inter', system-ui, sans-serif;
   --mono:        'JetBrains Mono', monospace;
 }
 
@@ -54,7 +56,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: var(--font);
+  font-family: 'Nunito', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -62,6 +64,27 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* ============================================================
+   SCROLL REVEAL
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   SHIMMER ANIMATION (progress bar)
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
 /* Scrollbar */
@@ -170,9 +193,9 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.6rem;
-  border-radius: var(--radius);
+  border-radius: 50rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.2s ease;
   border: 1px solid transparent;
 }
 .model-check-row:hover { background: var(--card); border-color: var(--card-border); }
@@ -256,27 +279,27 @@ body {
 /* Run button */
 .run-btn {
   width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 13px;
-  font-weight: 700;
-  background: var(--green);
-  color: #050508;
+  padding: 0.85rem 1.25rem;
+  font-size: 14px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+  color: #fff;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 50rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s;
-  letter-spacing: 0.01em;
-  box-shadow: 0 0 16px var(--green-glow);
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
 }
 .run-btn:hover:not(:disabled) {
-  background: #16a34a;
-  box-shadow: 0 0 24px var(--green-glow);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124,58,237,0.4);
 }
+.run-btn:active:not(:disabled) { transform: translateY(0); }
 .run-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
 .cancel-btn {
@@ -287,7 +310,7 @@ body {
   background: transparent;
   color: var(--text-dim);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius);
+  border-radius: 50rem;
   cursor: pointer;
   transition: all 0.15s;
   display: none;
@@ -312,16 +335,20 @@ body {
 .progress-track {
   height: 4px;
   background: rgba(255,255,255,0.06);
-  border-radius: 99px;
+  border-radius: 50rem;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--green), var(--purple-mid));
-  border-radius: 99px;
+  background: linear-gradient(90deg, var(--green), var(--purple-mid), var(--green));
+  background-size: 200% auto;
+  border-radius: 50rem;
   transition: width 0.3s ease;
   box-shadow: 0 0 8px var(--green-glow);
+}
+.progress-fill.running {
+  animation: shimmer 1.8s linear infinite;
 }
 
 /* Live log */
@@ -364,12 +391,18 @@ body {
 .kpi-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: 1.5rem;
   padding: 1.1rem 1.25rem;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
   position: relative;
   overflow: hidden;
 }
+
+/* KPI card stagger reveal delays */
+.kpi-card:nth-child(1) { transition-delay: 0ms, 0ms, 0ms, 0ms; }
+.kpi-card:nth-child(2) { transition-delay: 0ms, 0ms, 80ms, 80ms; }
+.kpi-card:nth-child(3) { transition-delay: 0ms, 0ms, 160ms, 160ms; }
+.kpi-card:nth-child(4) { transition-delay: 0ms, 0ms, 240ms, 240ms; }
 .kpi-card::before {
   content: '';
   position: absolute;
@@ -419,7 +452,7 @@ body {
 .glass-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: 1.5rem;
   padding: 1.25rem;
 }
 
@@ -610,7 +643,7 @@ body {
 .inspector-card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-lg);
+  border-radius: 1.5rem;
   padding: 1.25rem;
 }
 
@@ -797,11 +830,7 @@ body {
 }
 .animate-in { animation: fade-in-up 0.35s ease both; }
 
-/* Stagger */
-.kpi-card:nth-child(1) { animation-delay: 0.05s; }
-.kpi-card:nth-child(2) { animation-delay: 0.1s; }
-.kpi-card:nth-child(3) { animation-delay: 0.15s; }
-.kpi-card:nth-child(4) { animation-delay: 0.2s; }
+/* Stagger handled by reveal transition-delay on .kpi-card */
 
 /* ============================================================
    RESPONSIVE
@@ -891,33 +920,40 @@ body {
 
     <!-- KPI Cards -->
     <div class="kpi-row" id="kpi-row">
-      <div class="kpi-card kpi-green animate-in">
+      <div class="kpi-card kpi-green animate-in reveal">
         <div class="kpi-label">Models Evaluated</div>
         <div class="kpi-value" id="kpi-models">—</div>
         <div class="kpi-sub" id="kpi-models-sub">No run yet</div>
       </div>
-      <div class="kpi-card kpi-blue animate-in">
+      <div class="kpi-card kpi-blue animate-in reveal">
         <div class="kpi-label">Test Cases Run</div>
         <div class="kpi-value" id="kpi-cases">—</div>
         <div class="kpi-sub" id="kpi-cases-sub">Across all scenarios</div>
       </div>
-      <div class="kpi-card kpi-purple animate-in">
+      <div class="kpi-card kpi-purple animate-in reveal">
         <div class="kpi-label">Top Performer</div>
         <div class="kpi-value" id="kpi-top" style="font-size:16px;padding-top:4px">—</div>
         <div class="kpi-sub" id="kpi-top-sub">Score: —</div>
       </div>
-      <div class="kpi-card kpi-orange animate-in">
+      <div class="kpi-card kpi-orange animate-in reveal">
         <div class="kpi-label">Avg Score</div>
         <div class="kpi-value" id="kpi-avg">—</div>
         <div class="kpi-sub">Across all models</div>
       </div>
     </div>
 
+    <!-- Wave divider -->
+    <div style="line-height:0;margin:0;">
+      <svg viewBox="0 0 1440 40" preserveAspectRatio="none" style="display:block;width:100%;height:40px;opacity:0.4;">
+        <path d="M0,20 C360,40 1080,0 1440,20 L1440,40 L0,40 Z" fill="rgba(124,58,237,0.3)"/>
+      </svg>
+    </div>
+
     <!-- Center: Radar + Leaderboard -->
     <div class="center-row">
 
       <!-- Radar chart -->
-      <div class="glass-card">
+      <div class="glass-card reveal">
         <div class="card-title">
           <span class="card-title-icon">◈</span>
           Capability Radar
@@ -931,7 +967,7 @@ body {
       </div>
 
       <!-- Leaderboard -->
-      <div class="glass-card">
+      <div class="glass-card reveal">
         <div class="card-title">
           <span class="card-title-icon">▲</span>
           Leaderboard
@@ -947,7 +983,7 @@ body {
     </div>
 
     <!-- Test Case Inspector -->
-    <div class="inspector-card">
+    <div class="inspector-card reveal">
       <div class="card-title">
         <span class="card-title-icon">⊡</span>
         Test Case Inspector
@@ -1154,6 +1190,7 @@ async function startRun() {
   document.getElementById("progress-wrap").classList.add("visible");
   document.getElementById("live-log").classList.add("visible");
   document.getElementById("progress-fill").style.width = "0%";
+  document.getElementById("progress-fill").classList.add("running");
   document.getElementById("live-log").innerHTML = "";
   document.getElementById("run-status-badge").textContent = "Running";
   document.getElementById("run-status-badge").style.background = "var(--orange-dim)";
@@ -1252,6 +1289,7 @@ function resetRunBtn() {
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
   document.getElementById("cancel-btn").classList.remove("visible");
   document.getElementById("progress-wrap").classList.remove("visible");
+  document.getElementById("progress-fill").classList.remove("running");
   document.getElementById("live-log").classList.remove("visible");
 }
 
@@ -1663,6 +1701,32 @@ function toast(message, type = "info") {
     setTimeout(() => el.remove(), 200);
   }, 4000);
 }
+
+// ===================================================================
+// SCROLL REVEAL
+// ===================================================================
+(function initReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+
+  function observeReveal() {
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+  }
+
+  // Observe on DOM ready + small delay so layout is stable
+  document.addEventListener("DOMContentLoaded", () => setTimeout(observeReveal, 60));
+})();
+
+// ===================================================================
+// PROGRESS BAR SHIMMER — add/remove .running class via startRun
+// The shimmer class is toggled directly in startRun / resetRunBtn below.
+// ===================================================================
 </script>
 </body>
 </html>
