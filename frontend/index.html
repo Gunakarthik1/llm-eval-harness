@@ -1031,8 +1031,8 @@ function renderModelList() {
                    m.tier === "Pro" ? "var(--purple-dim)" :
                    m.tier === "Fast" ? "var(--orange-dim)" : "var(--cyan-dim)";
     return `
-    <label class="model-check-row ${sel ? "selected" : ""}" data-model="${m.id}" onclick="toggleModel('${m.id}', this)">
-      <input type="checkbox" ${sel ? "checked" : ""}>
+    <label class="model-check-row ${sel ? "selected" : ""}" data-model="${m.id}" onclick="toggleModel('${m.id}', this); return false;">
+      <input type="checkbox" onclick="event.stopPropagation()" ${sel ? "checked" : ""}>
       <div class="check-icon">
         <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
           <path d="M2 5l2.5 2.5L8 2.5" stroke="#050508" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
