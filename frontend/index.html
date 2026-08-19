@@ -13,12 +13,12 @@
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --bg:          #050508;
-  --bg2:         #0a0a10;
-  --bg3:         #0f0f18;
-  --card:        rgba(255,255,255,0.04);
+  --bg:          #242020;
+  --bg2:         #1e1b1b;
+  --bg3:         #1a1818;
+  --card:        #1e1b1b;
   --card-border: rgba(255,255,255,0.08);
-  --card-hover:  rgba(255,255,255,0.07);
+  --card-hover:  #232020;
 
   --green:       #22c55e;
   --green-dim:   rgba(34,197,94,0.12);
@@ -37,9 +37,9 @@
   --pink:        #ec4899;
   --pink-dim:    rgba(236,72,153,0.12);
 
-  --text:        #f1f5f9;
-  --text-dim:    #94a3b8;
-  --text-muted:  #475569;
+  --text:        #f0ece8;
+  --text-dim:    #a09890;
+  --text-muted:  #6b6260;
 
   --radius:      10px;
   --radius-lg:   1.5rem;
@@ -57,7 +57,11 @@
 html { scroll-behavior: smooth; }
 body {
   font-family: 'Nunito', sans-serif;
-  background: var(--bg);
+  background-color: #242020;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 30px 30px;
   color: var(--text);
   min-height: 100vh;
   font-size: 13px;
@@ -111,7 +115,7 @@ body {
   align-items: center;
   gap: 1rem;
   padding: 0 1.5rem;
-  background: rgba(5,5,8,0.95);
+  background: rgba(30,27,27,0.97);
   border-bottom: 1px solid var(--card-border);
   backdrop-filter: blur(12px);
   position: sticky;
@@ -281,9 +285,9 @@ body {
   width: 100%;
   padding: 0.85rem 1.25rem;
   font-size: 14px;
-  font-weight: 800;
-  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
-  color: #fff;
+  font-weight: 900 !important;
+  background: linear-gradient(135deg, #f09060, #fbb485) !important;
+  color: #1a0e08 !important;
   border: none;
   border-radius: 50rem;
   cursor: pointer;
@@ -293,14 +297,14 @@ body {
   gap: 0.5rem;
   transition: all 0.2s;
   letter-spacing: 0.02em;
-  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+  box-shadow: 0 4px 20px rgba(240,144,96,0.35) !important;
 }
 .run-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(240,144,96,0.45) !important;
 }
 .run-btn:active:not(:disabled) { transform: translateY(0); }
-.run-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.run-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none !important; }
 
 .cancel-btn {
   width: 100%;
@@ -389,29 +393,36 @@ body {
 }
 
 .kpi-card {
-  background: var(--card);
+  background: #1e1b1b;
   border: 1px solid var(--card-border);
   border-radius: 1.5rem;
   padding: 1.1rem 1.25rem;
-  transition: background 0.2s, border-color 0.2s, opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+  transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.65s cubic-bezier(0.16,1,0.3,1);
   position: relative;
   overflow: hidden;
 }
 
 /* KPI card stagger reveal delays */
-.kpi-card:nth-child(1) { transition-delay: 0ms, 0ms, 0ms, 0ms; }
-.kpi-card:nth-child(2) { transition-delay: 0ms, 0ms, 80ms, 80ms; }
-.kpi-card:nth-child(3) { transition-delay: 0ms, 0ms, 160ms, 160ms; }
-.kpi-card:nth-child(4) { transition-delay: 0ms, 0ms, 240ms, 240ms; }
+.kpi-card:nth-child(1) { transition-delay: 0ms, 0ms, 0ms, 0ms, 0ms; }
+.kpi-card:nth-child(2) { transition-delay: 0ms, 0ms, 0ms, 0ms, 80ms; }
+.kpi-card:nth-child(3) { transition-delay: 0ms, 0ms, 0ms, 0ms, 160ms; }
+.kpi-card:nth-child(4) { transition-delay: 0ms, 0ms, 0ms, 0ms, 240ms; }
 .kpi-card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.02));
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7b5ea7, #c85878, #e8836a, #d4a64a, #c8b84a);
   pointer-events: none;
+  z-index: 1;
 }
 
-.kpi-card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.12); }
+.kpi-card:hover {
+  background: var(--card-hover);
+  border-color: rgba(255,255,255,0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
 
 .kpi-label {
   font-size: 10.5px;
@@ -450,10 +461,26 @@ body {
 
 /* Glass cards */
 .glass-card {
-  background: var(--card);
+  background: #1e1b1b;
   border: 1px solid var(--card-border);
   border-radius: 1.5rem;
   padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7b5ea7, #c85878, #e8836a, #d4a64a, #c8b84a);
+  pointer-events: none;
+  z-index: 1;
+}
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
 
 .card-title {
@@ -515,7 +542,7 @@ body {
 
 .radar-tooltip {
   position: fixed;
-  background: rgba(10,10,16,0.95);
+  background: rgba(30,27,27,0.97);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
   padding: 0.6rem 0.85rem;
@@ -641,10 +668,26 @@ body {
    TEST CASE INSPECTOR
    ============================================================ */
 .inspector-card {
-  background: var(--card);
+  background: #1e1b1b;
   border: 1px solid var(--card-border);
   border-radius: 1.5rem;
   padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.inspector-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #7b5ea7, #c85878, #e8836a, #d4a64a, #c8b84a);
+  pointer-events: none;
+  z-index: 1;
+}
+.inspector-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
 
 .inspector-controls {
@@ -669,7 +712,7 @@ body {
   min-width: 200px;
 }
 .styled-select:focus { border-color: var(--purple); }
-.styled-select option { background: #0f0f18; }
+.styled-select option { background: #1e1b1b; }
 
 .inspector-grid {
   display: grid;
@@ -773,8 +816,8 @@ body {
 .spinner {
   display: inline-block;
   width: 13px; height: 13px;
-  border: 2px solid rgba(5,5,8,0.3);
-  border-top-color: #050508;
+  border: 2px solid rgba(26,14,8,0.3);
+  border-top-color: #1a0e08;
   border-radius: 50%;
   animation: spin 0.55s linear infinite;
   flex-shrink: 0;
@@ -848,6 +891,24 @@ body {
 </style>
 </head>
 <body>
+
+<!-- Rainbow stripe decoration -->
+<div style="position:relative;height:110px;overflow:hidden;pointer-events:none;" aria-hidden="true">
+  <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:auto;">
+    <path d="M-100,70 C200,10 500,100 800,50 C1100,0 1300,80 1540,40" fill="none" stroke="#7b5ea7" stroke-width="18" stroke-linecap="round" opacity="0.55"/>
+    <path d="M-100,82 C200,22 500,112 800,62 C1100,12 1300,92 1540,52" fill="none" stroke="#c85878" stroke-width="15" stroke-linecap="round" opacity="0.5"/>
+    <path d="M-100,94 C200,34 500,124 800,74 C1100,24 1300,104 1540,64" fill="none" stroke="#e8836a" stroke-width="13" stroke-linecap="round" opacity="0.45"/>
+    <path d="M-100,106 C200,46 500,136 800,86 C1100,36 1300,116 1540,76" fill="none" stroke="#d4a64a" stroke-width="11" stroke-linecap="round" opacity="0.4"/>
+    <path d="M-100,118 C200,58 500,148 800,98 C1100,48 1300,128 1540,88" fill="none" stroke="#c8b84a" stroke-width="9" stroke-linecap="round" opacity="0.35"/>
+  </svg>
+</div>
+
+<!-- Hero section -->
+<div style="max-width:1200px;margin:0 auto;padding:40px 24px 16px;">
+  <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#f09060;margin-bottom:10px;">LLM Evaluation Framework</div>
+  <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:900;color:#f0ece8;line-height:1.15;letter-spacing:-0.03em;margin-bottom:12px;">Rubric-based LLM-as-a-Judge.<br>Score, compare, improve.</h1>
+  <p style="font-size:15px;color:#a09890;max-width:540px;font-weight:500;">Evaluate faithfulness, relevance, coherence, and completeness. Adversarial test generation and HTML/JSON reporting included.</p>
+</div>
 
 <div class="shell">
 
