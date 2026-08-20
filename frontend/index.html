@@ -3,811 +3,702 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LLM Eval Dashboard</title>
+<title>LLM Eval — IDE Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    DESIGN TOKENS
    ============================================================ */
 :root {
-  --bg:          #191426;
-  --bg2:         #1e1b1b;
-  --bg3:         #1a1818;
-  --card:        #1e1b1b;
-  --card-border: rgba(255,255,255,0.08);
-  --card-hover:  #232020;
-
-  --green:       #22c55e;
-  --green-dim:   rgba(34,197,94,0.12);
-  --green-glow:  rgba(34,197,94,0.25);
-  --purple:      #7c3aed;
-  --purple-dim:  rgba(124,58,237,0.12);
-  --purple-mid:  #a78bfa;
-  --blue:        #3b82f6;
-  --blue-dim:    rgba(59,130,246,0.12);
-  --orange:      #f59e0b;
-  --orange-dim:  rgba(245,158,11,0.12);
-  --red:         #ef4444;
-  --red-dim:     rgba(239,68,68,0.12);
-  --cyan:        #06b6d4;
-  --cyan-dim:    rgba(6,182,212,0.12);
-  --pink:        #ec4899;
-  --pink-dim:    rgba(236,72,153,0.12);
-
-  --text:        #f0ece8;
-  --text-dim:    #a09890;
-  --text-muted:  #6b6260;
-
-  --radius:      10px;
-  --radius-lg:   1.5rem;
-  --radius-xl:   1.5rem;
-  --radius-pill: 50rem;
-
-  --font:        'Nunito', 'Inter', system-ui, sans-serif;
-  --mono:        'JetBrains Mono', monospace;
+  --bg: #191426;
+  --sidebar: #130f1e;
+  --card: #201a30;
+  --border: rgba(124,58,237,0.2);
+  --accent: #7c3aed;
+  --accent-end: #a78bfa;
+  --ink: #f0eeff;
+  --muted: #9b87d4;
+  --sidebar-border: rgba(124,58,237,0.15);
+  --green: #4ade80;
+  --yellow: #fbbf24;
+  --red: #f87171;
 }
 
 /* ============================================================
    RESET & BASE
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+
 body {
-  font-family: 'Nunito', sans-serif;
-  background-color: #191426;
+  background: var(--bg);
   background-image:
-    linear-gradient(rgba(167,139,250,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(167,139,250,0.018) 1px, transparent 1px);
+    linear-gradient(rgba(124,58,237,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,58,237,0.02) 1px, transparent 1px);
   background-size: 30px 30px;
-  color: var(--text);
-  min-height: 100vh;
-  font-size: 13px;
-  line-height: 1.6;
+  font-family: 'Nunito', sans-serif;
+  color: var(--ink);
+  height: 100vh;
+  overflow: hidden;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
 }
 
-/* ============================================================
-   SCROLL REVEAL
-   ============================================================ */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ============================================================
-   SHIMMER ANIMATION (progress bar)
-   ============================================================ */
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 99px; }
 
 /* ============================================================
-   LAYOUT
+   TITLE BAR
    ============================================================ */
-.shell {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  grid-template-rows: 56px 1fr;
-  min-height: 100vh;
-}
-
-/* ============================================================
-   TOP NAV
-   ============================================================ */
-.topnav {
-  grid-column: 1 / -1;
+.title-bar {
+  height: 40px;
+  background: var(--sidebar);
+  border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0 1.5rem;
-  background: rgba(30,27,27,0.97);
-  border-bottom: 1px solid var(--card-border);
-  backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 0 16px;
+  gap: 12px;
+  font: 600 13px 'Nunito';
+  color: var(--muted);
+  flex-shrink: 0;
+  user-select: none;
 }
 
-.logo {
+.title-logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
-  text-decoration: none;
+  gap: 8px;
 }
 
-.logo-dot {
-  width: 8px; height: 8px;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--green);
-  animation: pulse-dot 2s ease-in-out infinite;
+.title-logo-icon {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
-@keyframes pulse-dot {
-  0%, 100% { box-shadow: 0 0 8px var(--green); }
-  50% { box-shadow: 0 0 16px var(--green), 0 0 24px var(--green-glow); }
+.title-name {
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
-.topnav-right {
+.title-sep {
+  color: rgba(124,58,237,0.3);
+  margin: 0 2px;
+}
+
+.title-file {
+  color: rgba(155,135,212,0.6);
+  font: 400 12px 'JetBrains Mono';
+}
+
+.title-ver {
   margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  font: 600 11px 'JetBrains Mono';
+  color: rgba(155,135,212,0.4);
+  border: 1px solid rgba(124,58,237,0.15);
+  padding: 1px 7px;
+  border-radius: 4px;
 }
 
-.nav-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 99px;
-  background: var(--green-dim);
-  color: var(--green);
-  border: 1px solid rgba(34,197,94,0.2);
+/* Traffic light dots */
+.title-dots {
+  display: flex;
+  gap: 5px;
+  margin-right: 4px;
+}
+.title-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.title-dot.red    { background: #ff5f57; }
+.title-dot.yellow { background: #ffbd2e; }
+.title-dot.green  { background: #28c840; }
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+.app-shell {
+  display: flex;
+  height: calc(100vh - 40px);
+  overflow: hidden;
 }
 
 /* ============================================================
    SIDEBAR
    ============================================================ */
 .sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--card-border);
-  padding: 1.25rem;
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--sidebar);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-section {
+  padding: 14px 10px 6px;
 }
 
-.sidebar-section-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+.sidebar-section-label {
+  font: 700 10px 'Nunito';
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.6rem;
-}
-
-/* Model checkboxes */
-.model-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.model-check-row {
+  color: rgba(155,135,212,0.45);
+  margin-bottom: 6px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.6rem;
-  border-radius: 50rem;
+  justify-content: space-between;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 7px;
+  font: 600 12.5px 'Nunito';
+  color: var(--muted);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+  transition: all 0.15s;
+  position: relative;
 }
-.model-check-row:hover { background: var(--card); border-color: var(--card-border); }
-.model-check-row.selected { background: var(--card); border-color: var(--card-border); }
-
-.model-check-row input[type="checkbox"] { display: none; }
-
-.model-color-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
+.sidebar-item:hover { background: rgba(124,58,237,0.1); color: var(--ink); }
+.sidebar-item.active { background: rgba(124,58,237,0.16); color: var(--ink); }
+.sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 2.5px;
+  background: var(--accent-end);
+  border-radius: 0 2px 2px 0;
 }
 
-.model-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 0.1rem 0.45rem;
-  border-radius: 99px;
+.sidebar-item .icon { font-size: 13px; width: 18px; text-align: center; flex-shrink: 0; }
+
+.sidebar-item .badge {
   margin-left: auto;
+  font: 700 10px 'JetBrains Mono';
+  background: rgba(124,58,237,0.18);
+  color: var(--accent-end);
+  padding: 1px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(124,58,237,0.2);
   white-space: nowrap;
 }
 
-.model-name-text {
-  font-size: 12px;
-  font-weight: 500;
+.sidebar-divider {
+  height: 1px;
+  background: var(--sidebar-border);
+  margin: 6px 10px;
+}
+
+.run-btn-sidebar {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #0d0821;
+  font: 800 13px 'Nunito';
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+}
+.run-btn-sidebar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+}
+.run-btn-sidebar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Status bar */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 12px 14px;
+  font: 600 11.5px 'Nunito';
+  color: var(--muted);
+  margin-top: auto;
+  border-top: 1px solid var(--sidebar-border);
+  flex-shrink: 0;
+}
+
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  flex-shrink: 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.status-dot.loading {
+  background: var(--yellow);
+  box-shadow: 0 0 6px var(--yellow);
+  animation: pulse-dot 1s infinite;
+}
+.status-dot.error {
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red);
+}
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.status-text {
   flex: 1;
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.check-icon {
-  width: 14px; height: 14px;
-  border: 1.5px solid var(--text-muted);
-  border-radius: 3px;
-  flex-shrink: 0;
+/* History items */
+.history-item {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  font: 600 12px 'Nunito';
+  color: var(--muted);
+  cursor: pointer;
   transition: all 0.15s;
+  overflow: hidden;
 }
-.model-check-row.selected .check-icon {
-  background: var(--green);
-  border-color: var(--green);
+.history-item:hover { background: rgba(124,58,237,0.1); color: var(--ink); }
+.history-item .icon { font-size: 12px; width: 18px; text-align: center; flex-shrink: 0; }
+.history-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 11.5px 'JetBrains Mono';
+  color: rgba(155,135,212,0.7);
 }
-.check-icon svg { display: none; }
-.model-check-row.selected .check-icon svg { display: block; }
+.history-item:hover .history-item-label { color: var(--ink); }
+.history-item-score {
+  font: 700 10px 'Nunito';
+  color: var(--accent-end);
+  flex-shrink: 0;
+}
 
-/* Scenario multi-select */
-.scenario-list {
+/* ============================================================
+   MAIN PANEL
+   ============================================================ */
+.main-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  max-height: 200px;
-  overflow-y: auto;
+  gap: 18px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(124,58,237,0.3) transparent;
 }
 
-.scenario-item {
+/* ============================================================
+   SHARED CARD STYLE
+   ============================================================ */
+.panel-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.panel-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  pointer-events: none;
+}
+
+.panel-card-header {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 11.5px;
-  transition: background 0.12s;
-  color: var(--text-dim);
-}
-.scenario-item:hover { background: var(--card); color: var(--text); }
-.scenario-item.selected { color: var(--text); }
-.scenario-item.selected .sc-check { background: var(--green); border-color: var(--green); }
-
-.sc-check {
-  width: 12px; height: 12px;
-  border: 1.5px solid var(--text-muted);
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-/* Run button */
-.run-btn {
-  width: 100%;
-  padding: 0.85rem 1.25rem;
-  font-size: 14px;
-  font-weight: 900 !important;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa) !important;
-  color: #0f0820 !important;
-  border: none;
-  border-radius: 50rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-  letter-spacing: 0.02em;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.4) !important;
-}
-.run-btn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(167,139,250,0.5) !important;
-}
-.run-btn:active:not(:disabled) { transform: translateY(0); }
-.run-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none !important; }
-
-.cancel-btn {
-  width: 100%;
-  padding: 0.6rem 1rem;
-  font-size: 12px;
-  font-weight: 600;
-  background: transparent;
-  color: var(--text-dim);
-  border: 1px solid var(--card-border);
-  border-radius: 50rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: none;
-}
-.cancel-btn.visible { display: block; }
-.cancel-btn:hover { border-color: var(--red); color: var(--red); }
-
-/* Progress bar */
-.progress-wrap {
-  display: none;
-}
-.progress-wrap.visible { display: block; }
-
-.progress-label {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-bottom: 0.4rem;
-  display: flex;
   justify-content: space-between;
+  gap: 12px;
 }
 
-.progress-track {
-  height: 4px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 50rem;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--green), var(--purple-mid), var(--green));
-  background-size: 200% auto;
-  border-radius: 50rem;
-  transition: width 0.3s ease;
-  box-shadow: 0 0 8px var(--green-glow);
-}
-.progress-fill.running {
-  animation: shimmer 1.8s linear infinite;
-}
-
-/* Live log */
-.live-log {
-  display: none;
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-dim);
-  max-height: 100px;
-  overflow-y: auto;
-  background: rgba(0,0,0,0.3);
-  border-radius: 6px;
-  padding: 0.5rem;
-  line-height: 1.7;
-}
-.live-log.visible { display: block; }
-.log-line-green { color: var(--green); }
-.log-line-purple { color: var(--purple-mid); }
-
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
-.main {
-  overflow-y: auto;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* ============================================================
-   KPI CARDS
-   ============================================================ */
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.85rem;
-}
-
-.kpi-card {
-  background: #1e1b1b;
-  border: 1px solid var(--card-border);
-  border-radius: 1.5rem;
-  padding: 1.1rem 1.25rem;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.65s cubic-bezier(0.16,1,0.3,1);
-  position: relative;
-  overflow: hidden;
-}
-
-/* KPI card stagger reveal delays */
-.kpi-card:nth-child(1) { transition-delay: 0ms, 0ms, 0ms, 0ms, 0ms; }
-.kpi-card:nth-child(2) { transition-delay: 0ms, 0ms, 0ms, 0ms, 80ms; }
-.kpi-card:nth-child(3) { transition-delay: 0ms, 0ms, 0ms, 0ms, 160ms; }
-.kpi-card:nth-child(4) { transition-delay: 0ms, 0ms, 0ms, 0ms, 240ms; }
-.kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #4c1d95, #7c3aed, #a78bfa, #e879f9, #f0abfc);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.kpi-card:hover {
-  background: var(--card-hover);
-  border-color: rgba(255,255,255,0.12);
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-
-.kpi-label {
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.kpi-value {
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.kpi-sub {
-  font-size: 11px;
-  color: var(--text-dim);
-}
-
-.kpi-green .kpi-value { color: var(--green); }
-.kpi-purple .kpi-value { color: var(--purple-mid); }
-.kpi-blue .kpi-value { color: var(--blue); }
-.kpi-orange .kpi-value { color: var(--orange); }
-
-/* ============================================================
-   CENTER ROW: Radar + Leaderboard
-   ============================================================ */
-.center-row {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 0.85rem;
-}
-
-/* Glass cards */
-.glass-card {
-  background: #1e1b1b;
-  border: 1px solid var(--card-border);
-  border-radius: 1.5rem;
-  padding: 1.25rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #4c1d95, #7c3aed, #a78bfa, #e879f9, #f0abfc);
-  pointer-events: none;
-  z-index: 1;
-}
-.glass-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-}
-
-.card-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--purple-mid);
-  margin-bottom: 1rem;
+.panel-card-title {
+  font: 700 13px 'Nunito';
+  color: var(--ink);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  letter-spacing: -0.01em;
+  gap: 8px;
 }
-.card-title-icon {
-  width: 18px; height: 18px;
-  background: var(--purple-dim);
+
+.panel-card-title .title-icon {
+  width: 20px; height: 20px;
+  background: rgba(124,58,237,0.18);
   border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-}
-
-/* ============================================================
-   RADAR CHART
-   ============================================================ */
-.radar-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-#radar-svg {
-  width: 100%;
-  max-width: 280px;
-  height: auto;
-}
-
-.radar-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  justify-content: center;
-  margin-top: 0.75rem;
-}
-
-.radar-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
   font-size: 11px;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.radar-legend-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-}
-
-.radar-tooltip {
-  position: fixed;
-  background: rgba(30,27,27,0.97);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 0.6rem 0.85rem;
-  font-size: 11.5px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.15s;
-  z-index: 200;
-  backdrop-filter: blur(8px);
-  white-space: nowrap;
-}
-.radar-tooltip.visible { opacity: 1; }
-
-.radar-tooltip-model {
-  font-weight: 700;
-  margin-bottom: 0.3rem;
-}
-.radar-tooltip-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  color: var(--text-dim);
-}
-.radar-tooltip-row span:last-child { color: var(--green); font-weight: 600; }
-
-/* ============================================================
-   LEADERBOARD TABLE
-   ============================================================ */
-.lb-table-wrap {
-  overflow: auto;
-}
-
-.lb-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.lb-table th {
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--card-border);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  transition: color 0.15s;
-}
-.lb-table th:hover { color: var(--text-dim); }
-.lb-table th.sorted { color: var(--purple-mid); }
-.lb-table th .sort-arrow { margin-left: 0.25rem; }
-
-.lb-table td {
-  padding: 0.55rem 0.75rem;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  vertical-align: middle;
-}
-.lb-table tr:last-child td { border-bottom: none; }
-
-.lb-table tbody tr {
-  transition: background 0.12s;
-  cursor: pointer;
-}
-.lb-table tbody tr:hover td { background: rgba(255,255,255,0.025); }
-
-/* Rank medals */
-.rank-cell {
-  font-weight: 700;
-  font-size: 12px;
-  width: 36px;
-  text-align: center;
-}
-.rank-gold   { color: #fbbf24; }
-.rank-silver { color: #94a3b8; }
-.rank-bronze { color: #b45309; }
-
-/* Row highlight */
-.lb-table tbody tr.gold-row td { background: rgba(251,191,36,0.04); }
-.lb-table tbody tr.silver-row td { background: rgba(148,163,184,0.03); }
-.lb-table tbody tr.bronze-row td { background: rgba(180,83,9,0.03); }
-
-/* Score bar cell */
-.score-bar-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 90px;
-}
-.score-bar-track {
-  flex: 1;
-  height: 4px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 99px;
-  overflow: hidden;
-  min-width: 40px;
-}
-.score-bar-fill {
-  height: 100%;
-  border-radius: 99px;
-  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
-}
-.score-bar-num {
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--green);
-  width: 32px;
-  text-align: right;
   flex-shrink: 0;
 }
 
-.model-dot-cell {
+/* ============================================================
+   EVAL INPUT CARD
+   ============================================================ */
+.eval-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.eval-tab {
+  padding: 11px 20px;
+  font: 700 12.5px 'Nunito';
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+  bottom: -1px;
+}
+.eval-tab:hover { color: rgba(167,139,250,0.8); }
+.eval-tab.active {
+  color: var(--accent-end);
+  border-bottom-color: var(--accent-end);
+  background: rgba(124,58,237,0.05);
+}
+
+.eval-body { padding: 16px; }
+
+.eval-textarea {
+  width: 100%;
+  min-height: 90px;
+  background: rgba(19,15,30,0.75);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 14px;
+  font: 400 13.5px 'JetBrains Mono';
+  color: var(--ink);
+  resize: vertical;
+  line-height: 1.65;
+  transition: border-color 0.15s;
+  outline: none;
+  display: none;
+}
+.eval-textarea.active-tab { display: block; }
+.eval-textarea:focus {
+  border-color: rgba(124,58,237,0.5);
+  background: rgba(19,15,30,0.9);
+}
+.eval-textarea::placeholder { color: rgba(155,135,212,0.3); }
+
+.eval-run-bar {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
+  justify-content: flex-end;
+  padding: 10px 16px 14px;
+  gap: 12px;
+}
+
+.adv-toggle-label {
+  font: 600 12px 'Nunito';
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  transition: color 0.15s;
+}
+.adv-toggle-label:hover { color: var(--ink); }
+
+.adv-toggle-label input[type="checkbox"] {
+  appearance: none;
+  width: 14px; height: 14px;
+  border: 1.5px solid rgba(124,58,237,0.4);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+.adv-toggle-label input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.adv-toggle-label input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px; left: 1px;
+  font-size: 10px;
+  color: white;
+  font-weight: 700;
+}
+
+.run-eval-btn {
+  padding: 9px 22px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #0d0821;
+  font: 800 13px 'Nunito';
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  box-shadow: 0 3px 14px rgba(124,58,237,0.35);
+}
+.run-eval-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(124,58,237,0.5);
+}
+.run-eval-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ============================================================
-   TEST CASE INSPECTOR
+   SCORES PANEL
    ============================================================ */
-.inspector-card {
-  background: #1e1b1b;
-  border: 1px solid var(--card-border);
-  border-radius: 1.5rem;
-  padding: 1.25rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.inspector-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #4c1d95, #7c3aed, #a78bfa, #e879f9, #f0abfc);
-  pointer-events: none;
-  z-index: 1;
-}
-.inspector-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+.scores-card-body {
+  padding: 22px 24px 18px;
 }
 
-.inspector-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.styled-select {
-  font-family: var(--font);
-  font-size: 12px;
-  background: rgba(255,255,255,0.05);
-  color: var(--text);
-  border: 1px solid var(--card-border);
-  border-radius: var(--radius);
-  padding: 0.5rem 0.75rem;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s;
-  min-width: 200px;
-}
-.styled-select:focus { border-color: var(--purple); }
-.styled-select option { background: #1e1b1b; }
-
-.inspector-grid {
+.scores-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
 }
 
-.inspector-col {
-  background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: var(--radius);
-  padding: 0.85rem;
+.score-metric { text-align: center; }
+
+.score-metric-bar {
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 8px;
+  gap: 0;
 }
 
-.inspector-model-header {
+.score-bar-inner {
+  width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(0deg, #7c3aed, #a78bfa);
+  transition: height 0.85s cubic-bezier(0.16,1,0.3,1);
+  min-height: 4px;
+  box-shadow: 0 0 10px rgba(124,58,237,0.4);
+  position: relative;
+}
+
+.score-bar-track {
+  width: 28px;
+  height: 80px;
+  background: rgba(124,58,237,0.08);
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-end;
+  border: 1px solid rgba(124,58,237,0.12);
+  border-bottom: none;
+}
+
+.score-value {
+  font: 900 26px 'Nunito';
+  color: var(--ink);
+  line-height: 1;
+  transition: all 0.6s;
+}
+.score-value.placeholder { color: rgba(155,135,212,0.25); font-size: 20px; }
+
+.score-name {
+  font: 700 10.5px 'Nunito';
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+
+.score-subdot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(124,58,237,0.4);
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.overall-score {
+  text-align: center;
+  border-top: 1px solid var(--border);
+  margin-top: 18px;
+  padding-top: 16px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  justify-content: center;
+  gap: 16px;
 }
 
-.inspector-model-name {
-  font-size: 12px;
-  font-weight: 700;
+.overall-score-label {
+  font: 700 11px 'Nunito';
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.overall-score .val {
+  font: 900 44px 'Nunito';
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  transition: all 0.6s;
+}
+.overall-score .val.placeholder {
+  background: rgba(155,135,212,0.15);
+  -webkit-text-fill-color: transparent;
+}
+
+.overall-score-sub {
+  font: 400 12px 'JetBrains Mono';
+  color: rgba(155,135,212,0.5);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   REASONING CARD
+   ============================================================ */
+.reasoning-body {
+  padding: 18px 20px;
+}
+
+.reasoning-label {
+  font: 700 10px 'Nunito';
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reasoning-label::after {
+  content: '';
   flex: 1;
+  height: 1px;
+  background: var(--border);
 }
 
-.inspector-score {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--green);
-}
-
-.inspector-response {
-  font-size: 11.5px;
-  color: var(--text-dim);
-  line-height: 1.7;
-  max-height: 140px;
-  overflow-y: auto;
+.reasoning-text {
+  font: 400 12.5px 'JetBrains Mono';
+  color: rgba(240,238,255,0.7);
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.judge-btn {
+.reasoning-empty {
+  font: 400 13px 'JetBrains Mono';
+  color: rgba(155,135,212,0.28);
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* ============================================================
+   ADVERSARIAL TABLE
+   ============================================================ */
+.adv-table-wrap {
+  overflow-x: auto;
+}
+
+.adv-table {
   width: 100%;
-  margin-top: 0.6rem;
-  padding: 0.4rem 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--purple-mid);
-  background: var(--purple-dim);
+  border-collapse: collapse;
+}
+
+.adv-table th {
+  padding: 10px 18px;
+  text-align: left;
+  font: 700 10px 'Nunito';
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.adv-table td {
+  padding: 11px 18px;
+  font: 400 12.5px 'Nunito';
+  color: rgba(240,238,255,0.65);
+  border-bottom: 1px solid rgba(124,58,237,0.07);
+  vertical-align: middle;
+}
+.adv-table tr:last-child td { border-bottom: none; }
+.adv-table tbody tr { transition: background 0.12s; }
+.adv-table tbody tr:hover td { background: rgba(124,58,237,0.04); }
+
+.score-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font: 700 11.5px 'Nunito';
+  background: rgba(124,58,237,0.15);
+  color: var(--accent-end);
   border: 1px solid rgba(124,58,237,0.2);
+}
+
+.score-badge.high { background: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+.score-badge.mid  { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+.score-badge.low  { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.2); }
+
+.adv-empty {
+  text-align: center;
+  padding: 32px 20px;
+  font: 400 13px 'Nunito';
+  color: rgba(155,135,212,0.3);
+}
+
+.adv-toggle-btn {
+  font: 600 12px 'Nunito';
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
   border-radius: 6px;
+  padding: 4px 10px;
   cursor: pointer;
   transition: all 0.15s;
-  text-align: center;
 }
-.judge-btn:hover { background: rgba(124,58,237,0.2); }
-
-.judge-reasoning {
-  display: none;
-  margin-top: 0.6rem;
-  font-size: 10.5px;
-  color: var(--text-muted);
-  font-family: var(--mono);
-  line-height: 1.6;
-  background: rgba(0,0,0,0.3);
-  border-radius: 6px;
-  padding: 0.5rem;
-  max-height: 100px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.judge-reasoning.visible { display: block; }
-
-/* ============================================================
-   EMPTY STATE
-   ============================================================ */
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-muted);
-}
-.empty-state-icon {
-  font-size: 36px;
-  margin-bottom: 0.75rem;
-  opacity: 0.4;
-}
-.empty-state p {
-  font-size: 13px;
-  line-height: 1.7;
-}
+.adv-toggle-btn:hover { color: var(--ink); background: rgba(124,58,237,0.1); }
 
 /* ============================================================
    SPINNER
@@ -815,11 +706,11 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner {
   display: inline-block;
-  width: 13px; height: 13px;
-  border: 2px solid rgba(15,8,32,0.3);
-  border-top-color: #0f0820;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(13,8,33,0.3);
+  border-top-color: #0d0821;
   border-radius: 50%;
-  animation: spin 0.55s linear infinite;
+  animation: spin 0.6s linear infinite;
   flex-shrink: 0;
 }
 
@@ -828,966 +719,799 @@ body {
    ============================================================ */
 .toast-container {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 18px; right: 18px;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  z-index: 999;
+  gap: 6px;
+  z-index: 9999;
 }
 .toast {
-  background: var(--bg3);
-  border: 1px solid var(--card-border);
-  color: var(--text);
-  padding: 0.6rem 0.9rem;
-  border-radius: var(--radius);
-  font-size: 12px;
+  background: rgba(32,26,48,0.98);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 9px;
+  font: 600 12px 'Nunito';
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-  max-width: 320px;
+  gap: 7px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+  max-width: 300px;
   animation: toast-in 0.2s ease;
+  backdrop-filter: blur(12px);
 }
 @keyframes toast-in {
   from { transform: translateY(8px); opacity: 0; }
   to   { transform: translateY(0);   opacity: 1; }
 }
-.toast.error   { border-color: rgba(239,68,68,0.3); }
-.toast.success { border-color: rgba(34,197,94,0.3); }
-.toast-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.toast.error .toast-dot   { background: var(--red); }
-.toast.success .toast-dot { background: var(--green); }
-.toast.info .toast-dot    { background: var(--blue); }
-
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-in { animation: fade-in-up 0.35s ease both; }
-
-/* Stagger handled by reveal transition-delay on .kpi-card */
+.toast.error   { border-color: rgba(248,113,113,0.3); }
+.toast.success { border-color: rgba(74,222,128,0.3); }
+.toast.info    { border-color: rgba(124,58,237,0.3); }
+.toast-icon { font-size: 12px; }
 
 /* ============================================================
    RESPONSIVE
    ============================================================ */
-@media (max-width: 1100px) {
-  .kpi-row { grid-template-columns: repeat(2, 1fr); }
-  .center-row { grid-template-columns: 1fr; }
-  .inspector-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) {
+  .sidebar { width: 180px; }
+  .scores-grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 768px) {
-  .shell { grid-template-columns: 1fr; grid-template-rows: 56px auto 1fr; }
-  .sidebar { border-right: none; border-bottom: 1px solid var(--card-border); max-height: 300px; }
-  .kpi-row { grid-template-columns: 1fr 1fr; }
+@media (max-width: 680px) {
+  .sidebar { display: none; }
+  body { overflow: auto; height: auto; }
+  .app-shell { height: auto; }
+  .main-panel { padding: 14px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Rainbow stripe decoration -->
-<div style="position:relative;height:110px;overflow:hidden;pointer-events:none;" aria-hidden="true">
-  <svg viewBox="0 0 1440 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="position:absolute;bottom:0;left:0;width:100%;height:auto;">
-    <path d="M-100,70 C200,10 500,100 800,50 C1100,0 1300,80 1540,40" fill="none" stroke="#4c1d95" stroke-width="18" stroke-linecap="round" opacity="0.6"/>
-    <path d="M-100,82 C200,22 500,112 800,62 C1100,12 1300,92 1540,52" fill="none" stroke="#7c3aed" stroke-width="15" stroke-linecap="round" opacity="0.55"/>
-    <path d="M-100,94 C200,34 500,124 800,74 C1100,24 1300,104 1540,64" fill="none" stroke="#a78bfa" stroke-width="13" stroke-linecap="round" opacity="0.5"/>
-    <path d="M-100,106 C200,46 500,136 800,86 C1100,36 1300,116 1540,76" fill="none" stroke="#e879f9" stroke-width="11" stroke-linecap="round" opacity="0.45"/>
-    <path d="M-100,118 C200,58 500,148 800,98 C1100,48 1300,128 1540,88" fill="none" stroke="#f0abfc" stroke-width="9" stroke-linecap="round" opacity="0.4"/>
-  </svg>
+<!-- ============================================================
+     TITLE BAR
+     ============================================================ -->
+<div class="title-bar">
+  <div class="title-dots">
+    <div class="title-dot red"></div>
+    <div class="title-dot yellow"></div>
+    <div class="title-dot green"></div>
+  </div>
+  <div class="title-logo">
+    <div class="title-logo-icon">⬡</div>
+    <span class="title-name">LLM Eval</span>
+  </div>
+  <span class="title-sep">—</span>
+  <span class="title-file">eval-harness.run</span>
+  <span class="title-sep">·</span>
+  <span class="title-file" id="title-status">Ready</span>
+  <span class="title-ver">v1.0</span>
 </div>
 
-<!-- Hero section -->
-<div style="max-width:1200px;margin:0 auto;padding:40px 24px 16px;">
-  <div style="font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#a78bfa;margin-bottom:10px;">LLM Evaluation Framework</div>
-  <h1 style="font-size:clamp(2rem,4vw,3rem);font-weight:900;color:#f0ece8;line-height:1.15;letter-spacing:-0.03em;margin-bottom:12px;">Rubric-based LLM-as-a-Judge.<br>Score, compare, improve.</h1>
-  <p style="font-size:15px;color:#a09890;max-width:540px;font-weight:500;">Evaluate faithfulness, relevance, coherence, and completeness. Adversarial test generation and HTML/JSON reporting included.</p>
-</div>
-
-<div class="shell">
-
-  <!-- ============================================================
-       TOP NAV
-  ============================================================ -->
-  <nav class="topnav">
-    <a href="/" class="logo">
-      <span class="logo-dot"></span>
-      LLM Eval
-    </a>
-    <span style="color:var(--text-muted);font-size:12px;margin-left:0.25rem">/ Dashboard</span>
-    <div class="topnav-right">
-      <span class="nav-badge" id="run-status-badge">Ready</span>
-      <span style="font-size:11px;color:var(--text-muted);font-family:var(--mono)" id="run-ts"></span>
-    </div>
-  </nav>
+<!-- ============================================================
+     APP SHELL
+     ============================================================ -->
+<div class="app-shell">
 
   <!-- ============================================================
        SIDEBAR
-  ============================================================ -->
-  <aside class="sidebar">
+       ============================================================ -->
+  <aside class="sidebar" id="sidebar">
 
-    <!-- Models -->
-    <div>
-      <div class="sidebar-section-title">Models</div>
-      <div class="model-list" id="model-list">
-        <!-- populated by JS -->
+    <!-- EXPLORER -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Explorer</div>
+
+      <div class="sidebar-item active" id="sb-new-eval" onclick="clearForm()">
+        <span class="icon">📋</span>
+        <span>New Evaluation</span>
       </div>
     </div>
 
-    <!-- Scenarios -->
-    <div>
-      <div class="sidebar-section-title" style="display:flex;justify-content:space-between;align-items:center">
-        <span>Scenarios</span>
-        <span style="font-size:10px;color:var(--text-muted);cursor:pointer" id="sc-toggle-all">All</span>
-      </div>
-      <div class="scenario-list" id="scenario-list">
-        <div style="font-size:11px;color:var(--text-muted);font-style:italic;padding:0.25rem">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Progress -->
-    <div class="progress-wrap" id="progress-wrap">
-      <div class="progress-label">
-        <span id="progress-label-text">Running...</span>
-        <span id="progress-pct-text">0%</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-    </div>
-
-    <!-- Live log -->
-    <div class="live-log" id="live-log"></div>
-
-    <!-- Run button -->
-    <button class="run-btn" id="run-btn" onclick="startRun()" disabled>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    <button class="run-btn-sidebar" id="run-btn-sidebar" onclick="submitEval()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       Run Evaluation
     </button>
-    <button class="cancel-btn" id="cancel-btn" onclick="cancelRun()">Cancel</button>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- METRICS -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Metrics</div>
+
+      <div class="sidebar-item" id="sb-faith" onclick="scrollToScores()">
+        <span class="icon">🎯</span>
+        <span>Faithfulness</span>
+        <span class="badge" id="sb-faith-score">—</span>
+      </div>
+      <div class="sidebar-item" id="sb-relev" onclick="scrollToScores()">
+        <span class="icon">🔗</span>
+        <span>Relevance</span>
+        <span class="badge" id="sb-relev-score">—</span>
+      </div>
+      <div class="sidebar-item" id="sb-coher" onclick="scrollToScores()">
+        <span class="icon">💡</span>
+        <span>Coherence</span>
+        <span class="badge" id="sb-coher-score">—</span>
+      </div>
+      <div class="sidebar-item" id="sb-comp" onclick="scrollToScores()">
+        <span class="icon">📊</span>
+        <span>Completeness</span>
+        <span class="badge" id="sb-comp-score">—</span>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- HISTORY -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">
+        <span>History</span>
+        <span style="font:600 10px 'Nunito';color:rgba(155,135,212,0.4);cursor:pointer;letter-spacing:0;text-transform:none" onclick="clearHistory()">Clear</span>
+      </div>
+      <div id="history-list">
+        <div style="font:400 11px 'JetBrains Mono';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">No history yet</div>
+      </div>
+    </div>
+
+    <!-- STATUS (pinned bottom) -->
+    <div class="status-indicator">
+      <div class="status-dot" id="status-dot"></div>
+      <span class="status-text" id="status-text">Ready</span>
+    </div>
 
   </aside>
 
   <!-- ============================================================
-       MAIN CONTENT
-  ============================================================ -->
-  <main class="main">
+       MAIN PANEL
+       ============================================================ -->
+  <main class="main-panel" id="main-panel">
 
-    <!-- KPI Cards -->
-    <div class="kpi-row" id="kpi-row">
-      <div class="kpi-card kpi-green animate-in reveal">
-        <div class="kpi-label">Models Evaluated</div>
-        <div class="kpi-value" id="kpi-models">—</div>
-        <div class="kpi-sub" id="kpi-models-sub">No run yet</div>
+    <!-- ── EVAL INPUT CARD ─────────────────────────────────────── -->
+    <div class="panel-card" id="eval-input-card">
+      <div class="eval-tabs" id="eval-tabs">
+        <div class="eval-tab active" data-tab="question" onclick="switchTab('question')">Question</div>
+        <div class="eval-tab" data-tab="answer" onclick="switchTab('answer')">Answer</div>
+        <div class="eval-tab" data-tab="context" onclick="switchTab('context')">Context</div>
       </div>
-      <div class="kpi-card kpi-blue animate-in reveal">
-        <div class="kpi-label">Test Cases Run</div>
-        <div class="kpi-value" id="kpi-cases">—</div>
-        <div class="kpi-sub" id="kpi-cases-sub">Across all scenarios</div>
+
+      <div class="eval-body">
+        <textarea
+          class="eval-textarea active-tab"
+          id="input-question"
+          data-tab="question"
+          placeholder="Enter the question that was asked to the LLM…"
+          rows="5"
+        ></textarea>
+        <textarea
+          class="eval-textarea"
+          id="input-answer"
+          data-tab="answer"
+          placeholder="Enter the LLM's answer / response to evaluate…"
+          rows="5"
+        ></textarea>
+        <textarea
+          class="eval-textarea"
+          id="input-context"
+          data-tab="context"
+          placeholder="Enter the reference context / ground truth (optional)…"
+          rows="5"
+        ></textarea>
       </div>
-      <div class="kpi-card kpi-purple animate-in reveal">
-        <div class="kpi-label">Top Performer</div>
-        <div class="kpi-value" id="kpi-top" style="font-size:16px;padding-top:4px">—</div>
-        <div class="kpi-sub" id="kpi-top-sub">Score: —</div>
-      </div>
-      <div class="kpi-card kpi-orange animate-in reveal">
-        <div class="kpi-label">Avg Score</div>
-        <div class="kpi-value" id="kpi-avg">—</div>
-        <div class="kpi-sub">Across all models</div>
+
+      <div class="eval-run-bar">
+        <label class="adv-toggle-label">
+          <input type="checkbox" id="adv-toggle" checked>
+          Run Adversarial Tests
+        </label>
+        <button class="run-eval-btn" id="run-eval-btn" onclick="submitEval()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Run Evaluation
+        </button>
       </div>
     </div>
 
-    <!-- Wave divider -->
-    <div style="line-height:0;margin:0;">
-      <svg viewBox="0 0 1440 40" preserveAspectRatio="none" style="display:block;width:100%;height:40px;opacity:0.4;">
-        <path d="M0,20 C360,40 1080,0 1440,20 L1440,40 L0,40 Z" fill="rgba(124,58,237,0.3)"/>
-      </svg>
-    </div>
-
-    <!-- Center: Radar + Leaderboard -->
-    <div class="center-row">
-
-      <!-- Radar chart -->
-      <div class="glass-card reveal">
-        <div class="card-title">
-          <span class="card-title-icon">◈</span>
-          Capability Radar
+    <!-- ── SCORES PANEL ───────────────────────────────────────── -->
+    <div class="panel-card" id="scores-card">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">◈</div>
+          Rubric Scores
         </div>
-        <div class="radar-wrap" id="radar-wrap">
-          <div class="empty-state">
-            <div class="empty-state-icon">◎</div>
-            <p>Run an evaluation to<br>populate the radar chart.</p>
+        <span style="font:400 11px 'JetBrains Mono';color:rgba(155,135,212,0.4)" id="scores-timestamp"></span>
+      </div>
+      <div class="scores-card-body">
+        <div class="scores-grid">
+
+          <!-- Faithfulness -->
+          <div class="score-metric">
+            <div class="score-metric-bar">
+              <div class="score-bar-track">
+                <div class="score-bar-inner" id="bar-faithfulness" style="height:4px"></div>
+              </div>
+            </div>
+            <div class="score-value placeholder" id="val-faithfulness">—</div>
+            <div class="score-name"><span class="score-subdot"></span>Faithfulness</div>
           </div>
-        </div>
-      </div>
 
-      <!-- Leaderboard -->
-      <div class="glass-card reveal">
-        <div class="card-title">
-          <span class="card-title-icon">▲</span>
-          Leaderboard
-        </div>
-        <div class="lb-table-wrap" id="lb-table-wrap">
-          <div class="empty-state">
-            <div class="empty-state-icon">◻</div>
-            <p>Leaderboard will appear<br>after first evaluation run.</p>
+          <!-- Relevance -->
+          <div class="score-metric">
+            <div class="score-metric-bar">
+              <div class="score-bar-track">
+                <div class="score-bar-inner" id="bar-relevance" style="height:4px"></div>
+              </div>
+            </div>
+            <div class="score-value placeholder" id="val-relevance">—</div>
+            <div class="score-name"><span class="score-subdot"></span>Relevance</div>
           </div>
+
+          <!-- Coherence -->
+          <div class="score-metric">
+            <div class="score-metric-bar">
+              <div class="score-bar-track">
+                <div class="score-bar-inner" id="bar-coherence" style="height:4px"></div>
+              </div>
+            </div>
+            <div class="score-value placeholder" id="val-coherence">—</div>
+            <div class="score-name"><span class="score-subdot"></span>Coherence</div>
+          </div>
+
+          <!-- Completeness -->
+          <div class="score-metric">
+            <div class="score-metric-bar">
+              <div class="score-bar-track">
+                <div class="score-bar-inner" id="bar-completeness" style="height:4px"></div>
+              </div>
+            </div>
+            <div class="score-value placeholder" id="val-completeness">—</div>
+            <div class="score-name"><span class="score-subdot"></span>Completeness</div>
+          </div>
+
+        </div>
+
+        <!-- Overall -->
+        <div class="overall-score">
+          <div>
+            <div class="overall-score-label">Overall Score</div>
+            <div class="overall-score-sub" id="overall-sub">Awaiting evaluation</div>
+          </div>
+          <div class="val placeholder" id="val-overall">—</div>
         </div>
       </div>
-
     </div>
 
-    <!-- Test Case Inspector -->
-    <div class="inspector-card reveal">
-      <div class="card-title">
-        <span class="card-title-icon">⊡</span>
-        Test Case Inspector
+    <!-- ── REASONING CARD ─────────────────────────────────────── -->
+    <div class="panel-card" id="reasoning-card">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">⊡</div>
+          Judge Reasoning
+        </div>
+        <span style="font:600 11px 'Nunito';color:rgba(155,135,212,0.4);letter-spacing:0.05em;text-transform:uppercase;font-size:10px">LLM-as-a-Judge</span>
       </div>
-      <div class="inspector-controls">
-        <select class="styled-select" id="inspector-scenario-select" onchange="renderInspector()">
-          <option value="">Select a scenario...</option>
-        </select>
-        <span style="font-size:11px;color:var(--text-muted)">3-way model comparison</span>
+      <div class="reasoning-body">
+        <div class="reasoning-label">Faithfulness</div>
+        <div class="reasoning-text reasoning-empty" id="reasoning-faithfulness">Submit an evaluation to see the judge's reasoning…</div>
+
+        <div class="reasoning-label" style="margin-top:14px">Relevance</div>
+        <div class="reasoning-text reasoning-empty" id="reasoning-relevance">—</div>
+
+        <div class="reasoning-label" style="margin-top:14px">Coherence</div>
+        <div class="reasoning-text reasoning-empty" id="reasoning-coherence">—</div>
+
+        <div class="reasoning-label" style="margin-top:14px">Completeness</div>
+        <div class="reasoning-text reasoning-empty" id="reasoning-completeness">—</div>
       </div>
-      <div id="inspector-body">
-        <div class="empty-state">
-          <div class="empty-state-icon">⊙</div>
-          <p>Run an evaluation, then select a scenario<br>to compare model responses side-by-side.</p>
+    </div>
+
+    <!-- ── ADVERSARIAL TESTS CARD ─────────────────────────────── -->
+    <div class="panel-card" id="adv-card">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">⚡</div>
+          Adversarial Tests
+        </div>
+        <button class="adv-toggle-btn" id="adv-collapse-btn" onclick="toggleAdvTable()">Collapse</button>
+      </div>
+      <div id="adv-table-container">
+        <div class="adv-empty" id="adv-empty">
+          Run an evaluation with "Adversarial Tests" enabled to see results here.
+        </div>
+        <div class="adv-table-wrap" id="adv-table-wrap" style="display:none">
+          <table class="adv-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Perturbation</th>
+                <th>Modified Input</th>
+                <th>Faithfulness</th>
+                <th>Relevance</th>
+                <th>Coherence</th>
+                <th>Completeness</th>
+                <th>Overall</th>
+              </tr>
+            </thead>
+            <tbody id="adv-table-body"></tbody>
+          </table>
         </div>
       </div>
     </div>
 
   </main>
-
-</div><!-- /.shell -->
-
-<!-- Radar tooltip -->
-<div class="radar-tooltip" id="radar-tooltip"></div>
+</div>
 
 <!-- Toast container -->
 <div class="toast-container" id="toast-container"></div>
 
 <!-- ============================================================
      JAVASCRIPT
-============================================================ -->
+     ============================================================ -->
 <script>
-// ===================================================================
-// MODEL CATALOG
-// ===================================================================
-const MODEL_CATALOG = [
-  { id: "gpt-4o",              label: "GPT-4o",           color: "#22c55e",  tier: "Flagship"  },
-  { id: "claude-3-5-sonnet",   label: "Claude 3.5 Sonnet",color: "#a78bfa",  tier: "Flagship"  },
-  { id: "gemini-1.5-pro",      label: "Gemini 1.5 Pro",   color: "#3b82f6",  tier: "Pro"       },
-  { id: "gpt-3.5-turbo",       label: "GPT-3.5 Turbo",    color: "#f59e0b",  tier: "Fast"      },
-  { id: "llama-3-70b",         label: "Llama 3 70B",       color: "#06b6d4",  tier: "Open"      },
-  { id: "mistral-large",       label: "Mistral Large",     color: "#ec4899",  tier: "Open"      },
-  { id: "claude-3-opus",       label: "Claude 3 Opus",     color: "#f97316",  tier: "Flagship"  },
-  { id: "llama-3-8b",          label: "Llama 3 8B",        color: "#8b5cf6",  tier: "Open"      },
-];
-
-const MODEL_COLOR_MAP = Object.fromEntries(MODEL_CATALOG.map(m => [m.id, m.color]));
-
 // ===================================================================
 // STATE
 // ===================================================================
-let selectedModels  = new Set(["gpt-4o", "claude-3-5-sonnet", "gemini-1.5-pro"]);
-let selectedScenarios = new Set();
-let allScenarios    = [];
-let lastResults     = null;   // { model_id: { overall, radar, scenarios, ... } }
-let cancelRequested = false;
-let activeEventSource = null;
-let sortCol         = "overall";
-let sortAsc         = false;
+let currentTab = 'question';
+let advTableVisible = true;
+let lastScores = null;
+
+// In-memory tab values (persisted across tab switches)
+const tabValues = {
+  question: '',
+  answer: '',
+  context: ''
+};
 
 // ===================================================================
-// INIT
+// HISTORY (localStorage)
 // ===================================================================
-document.addEventListener("DOMContentLoaded", () => {
-  renderModelList();
-  loadScenarios();
-  loadLatestResults();
-});
+const HISTORY_KEY = 'llm_eval_history';
+const MAX_HISTORY = 5;
 
-// ===================================================================
-// MODEL LIST
-// ===================================================================
-function renderModelList() {
-  const list = document.getElementById("model-list");
-  list.innerHTML = MODEL_CATALOG.map(m => {
-    const sel = selectedModels.has(m.id);
-    const tierColor = m.tier === "Flagship" ? "var(--green)" :
-                      m.tier === "Pro" ? "var(--purple-mid)" :
-                      m.tier === "Fast" ? "var(--orange)" : "var(--cyan)";
-    const tierBg = m.tier === "Flagship" ? "var(--green-dim)" :
-                   m.tier === "Pro" ? "var(--purple-dim)" :
-                   m.tier === "Fast" ? "var(--orange-dim)" : "var(--cyan-dim)";
-    return `
-    <label class="model-check-row ${sel ? "selected" : ""}" data-model="${m.id}" onclick="toggleModel('${m.id}', this); return false;">
-      <input type="checkbox" onclick="event.stopPropagation()" ${sel ? "checked" : ""}>
-      <div class="check-icon">
-        <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
-          <path d="M2 5l2.5 2.5L8 2.5" stroke="#050508" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <span class="model-color-dot" style="background:${m.color}; box-shadow: 0 0 6px ${m.color}44"></span>
-      <span class="model-name-text">${m.label}</span>
-      <span class="model-badge" style="background:${tierBg};color:${tierColor};border:1px solid ${tierColor}33">${m.tier}</span>
-    </label>`;
-  }).join("");
-}
-
-function toggleModel(id, el) {
-  if (selectedModels.has(id)) {
-    if (selectedModels.size <= 1) { toast("Select at least 1 model.", "error"); return; }
-    selectedModels.delete(id);
-    el.classList.remove("selected");
-  } else {
-    selectedModels.add(id);
-    el.classList.add("selected");
-  }
-}
-
-// ===================================================================
-// SCENARIOS
-// ===================================================================
-async function loadScenarios() {
+function getHistory() {
   try {
-    const res  = await fetch("/api/scenarios");
-    const data = await res.json();
-    allScenarios = data.scenarios || [];
-    allScenarios.forEach(s => selectedScenarios.add(s.id));
-    renderScenarioList();
-    document.getElementById("run-btn").disabled = false;
-  } catch(e) {
-    document.getElementById("scenario-list").innerHTML =
-      '<div style="font-size:11px;color:var(--red)">Could not load scenarios</div>';
-  }
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  } catch(_) { return []; }
 }
 
-function renderScenarioList() {
-  const list = document.getElementById("scenario-list");
-  list.innerHTML = allScenarios.map(s => {
-    const sel = selectedScenarios.has(s.id);
-    const label = s.id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-    return `<div class="scenario-item ${sel ? "selected" : ""}" onclick="toggleScenario('${s.id}', this)">
-      <div class="sc-check"></div>
-      <span>${label}</span>
-    </div>`;
-  }).join("");
+function saveHistory() { /* called after push */ }
 
-  // Populate inspector select
-  const sel = document.getElementById("inspector-scenario-select");
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">Select a scenario...</option>' +
-    allScenarios.map(s => {
-      const label = s.id.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-      return `<option value="${s.id}">${label}</option>`;
-    }).join("");
-  if (prev) sel.value = prev;
+function addToHistory(entry) {
+  let history = getHistory();
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  renderHistory();
 }
 
-function toggleScenario(id, el) {
-  if (selectedScenarios.has(id)) {
-    selectedScenarios.delete(id);
-    el.classList.remove("selected");
-    el.querySelector(".sc-check").style.background = "";
-  } else {
-    selectedScenarios.add(id);
-    el.classList.add("selected");
-    el.querySelector(".sc-check").style.background = "var(--green)";
-    el.querySelector(".sc-check").style.borderColor = "var(--green)";
-  }
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
 }
 
-document.getElementById("sc-toggle-all").addEventListener("click", () => {
-  const allSelected = allScenarios.every(s => selectedScenarios.has(s.id));
-  if (allSelected) {
-    selectedScenarios.clear();
-  } else {
-    allScenarios.forEach(s => selectedScenarios.add(s.id));
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const history = getHistory();
+  if (!history.length) {
+    list.innerHTML = '<div style="font:400 11px \'JetBrains Mono\';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">No history yet</div>';
+    return;
   }
-  renderScenarioList();
-});
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistoryEntry(${i})">
+      <span class="icon">📄</span>
+      <span class="history-item-label">${escHtml(h.id)}</span>
+      <span class="history-item-score">${h.overall !== undefined ? h.overall.toFixed(1) : '—'}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistoryEntry(index) {
+  const history = getHistory();
+  const entry = history[index];
+  if (!entry) return;
+
+  // Restore inputs
+  tabValues.question = entry.question || '';
+  tabValues.answer   = entry.answer   || '';
+  tabValues.context  = entry.context  || '';
+
+  document.getElementById('input-question').value = tabValues.question;
+  document.getElementById('input-answer').value   = tabValues.answer;
+  document.getElementById('input-context').value  = tabValues.context;
+
+  // Restore scores if saved
+  if (entry.scores) {
+    renderScores(entry.scores);
+  }
+  if (entry.adversarial) {
+    renderAdversarialTable(entry.adversarial);
+  }
+
+  switchTab('question');
+  toast('Loaded: ' + entry.id, 'info');
+}
 
 // ===================================================================
-// LOAD LATEST
+// TAB SWITCHING
 // ===================================================================
-async function loadLatestResults() {
-  try {
-    const res  = await fetch("/api/results/latest");
-    const data = await res.json();
-    if (data.results && Object.keys(data.results).length > 0) {
-      lastResults = data.results;
-      renderAll(lastResults);
-      toast("Loaded previous run results.", "info");
+function switchTab(tab) {
+  // Save current tab's value
+  const currentTextarea = document.querySelector('.eval-textarea.active-tab');
+  if (currentTextarea) {
+    tabValues[currentTab] = currentTextarea.value;
+  }
+
+  currentTab = tab;
+
+  // Update tab classes
+  document.querySelectorAll('.eval-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+
+  // Show/hide textareas
+  document.querySelectorAll('.eval-textarea').forEach(ta => {
+    ta.classList.toggle('active-tab', ta.dataset.tab === tab);
+    if (ta.dataset.tab === tab) {
+      ta.value = tabValues[tab];
+      ta.focus();
     }
-  } catch(_) {}
+  });
 }
 
 // ===================================================================
-// RUN EVALUATION (SSE)
+// CLEAR FORM
 // ===================================================================
-async function startRun() {
-  const models = [...selectedModels];
-  const scenarioIds = [...selectedScenarios];
+function clearForm() {
+  tabValues.question = '';
+  tabValues.answer   = '';
+  tabValues.context  = '';
+  document.getElementById('input-question').value = '';
+  document.getElementById('input-answer').value   = '';
+  document.getElementById('input-context').value  = '';
+  switchTab('question');
 
-  if (models.length === 0) { toast("Select at least one model.", "error"); return; }
-  if (scenarioIds.length === 0) { toast("Select at least one scenario.", "error"); return; }
+  // Reset scores
+  setStatusReady();
+  resetScoreDisplay();
+  document.getElementById('adv-empty').style.display = '';
+  document.getElementById('adv-table-wrap').style.display = 'none';
+  document.getElementById('adv-table-body').innerHTML = '';
+  document.getElementById('scores-timestamp').textContent = '';
+}
 
-  cancelRequested = false;
-  lastResults = null;
+function resetScoreDisplay() {
+  ['faithfulness','relevance','coherence','completeness'].forEach(m => {
+    const bar = document.getElementById('bar-' + m);
+    const val = document.getElementById('val-' + m);
+    if (bar) bar.style.height = '4px';
+    if (val) { val.textContent = '—'; val.classList.add('placeholder'); }
+    document.getElementById('sb-' + m.substring(0,5) + '-score') &&
+      (document.getElementById('sb-' + m.substring(0,5) + '-score').textContent = '—');
+  });
+  document.getElementById('val-overall').textContent = '—';
+  document.getElementById('val-overall').classList.add('placeholder');
+  document.getElementById('overall-sub').textContent = 'Awaiting evaluation';
 
-  // UI
-  document.getElementById("run-btn").disabled = true;
-  document.getElementById("run-btn").innerHTML =
-    '<span class="spinner"></span> Running...';
-  document.getElementById("cancel-btn").classList.add("visible");
-  document.getElementById("progress-wrap").classList.add("visible");
-  document.getElementById("live-log").classList.add("visible");
-  document.getElementById("progress-fill").style.width = "0%";
-  document.getElementById("progress-fill").classList.add("running");
-  document.getElementById("live-log").innerHTML = "";
-  document.getElementById("run-status-badge").textContent = "Running";
-  document.getElementById("run-status-badge").style.background = "var(--orange-dim)";
-  document.getElementById("run-status-badge").style.color = "var(--orange)";
-  document.getElementById("run-status-badge").style.borderColor = "rgba(245,158,11,0.2)";
+  // Reset sidebar badges
+  ['faith','relev','coher','comp'].forEach(k => {
+    const el = document.getElementById('sb-' + k + '-score');
+    if (el) el.textContent = '—';
+  });
+
+  // Reset reasoning
+  ['faithfulness','relevance','coherence','completeness'].forEach(m => {
+    const el = document.getElementById('reasoning-' + m);
+    if (el) {
+      el.textContent = m === 'faithfulness'
+        ? 'Submit an evaluation to see the judge\'s reasoning…'
+        : '—';
+      el.classList.add('reasoning-empty');
+    }
+  });
+}
+
+// ===================================================================
+// STATUS HELPERS
+// ===================================================================
+function setStatusLoading(msg) {
+  document.getElementById('status-dot').className = 'status-dot loading';
+  document.getElementById('status-text').textContent = msg || 'Evaluating…';
+  document.getElementById('title-status').textContent = 'Evaluating…';
+}
+
+function setStatusReady() {
+  document.getElementById('status-dot').className = 'status-dot';
+  document.getElementById('status-text').textContent = 'Ready';
+  document.getElementById('title-status').textContent = 'Ready';
+}
+
+function setStatusError() {
+  document.getElementById('status-dot').className = 'status-dot error';
+  document.getElementById('status-text').textContent = 'Error';
+  document.getElementById('title-status').textContent = 'Error';
+}
+
+// ===================================================================
+// SCROLL TO SCORES
+// ===================================================================
+function scrollToScores() {
+  document.getElementById('scores-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===================================================================
+// SUBMIT EVALUATION
+// ===================================================================
+async function submitEval() {
+  // Sync current textarea value before reading
+  const activeTA = document.querySelector('.eval-textarea.active-tab');
+  if (activeTA) tabValues[currentTab] = activeTA.value;
+
+  const question   = tabValues.question.trim();
+  const answer     = tabValues.answer.trim();
+  const context    = tabValues.context.trim();
+  const runAdv     = document.getElementById('adv-toggle').checked;
+
+  if (!question) { toast('Please enter a Question.', 'error'); switchTab('question'); return; }
+  if (!answer)   { toast('Please enter an Answer.', 'error');   switchTab('answer');   return; }
+
+  setStatusLoading('Evaluating…');
+  setButtonsDisabled(true);
 
   try {
-    // Use fetch + ReadableStream for SSE POST
-    const response = await fetch("/api/run", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ models, scenario_ids: scenarioIds }),
+    const res = await fetch('/api/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, answer, context, run_adversarial: runAdv }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Server error ' + res.status }));
+      throw new Error(err.error || 'Server error ' + res.status);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = "";
+    const data = await res.json();
+    lastScores = data;
 
-    while (true) {
-      if (cancelRequested) break;
-      const { done, value } = await reader.read();
-      if (done) break;
+    renderScores(data);
+    renderReasoning(data);
 
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop(); // keep incomplete line
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const ev = JSON.parse(line.slice(6));
-          handleSSEEvent(ev);
-        } catch(_) {}
-      }
+    if (runAdv && data.adversarial_results) {
+      renderAdversarialTable(data.adversarial_results);
     }
 
-  } catch(e) {
-    if (!cancelRequested) {
-      toast("Evaluation failed: " + e.message, "error");
-    }
+    // Persist to history
+    const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const evalId = 'eval_' + Date.now().toString(36);
+    addToHistory({
+      id: evalId,
+      ts,
+      question,
+      answer,
+      context,
+      overall: data.overall_score || calcOverall(data),
+      scores: data,
+      adversarial: (runAdv && data.adversarial_results) ? data.adversarial_results : null,
+    });
+
+    document.getElementById('scores-timestamp').textContent = ts;
+    setStatusReady();
+    toast('Evaluation complete!', 'success');
+
+  } catch (e) {
+    setStatusError();
+    toast('Evaluation failed: ' + e.message, 'error');
+    console.error(e);
   } finally {
-    resetRunBtn();
+    setButtonsDisabled(false);
   }
 }
 
-function handleSSEEvent(ev) {
-  if (ev.event === "progress") {
-    // Update progress bar
-    const pct = ev.pct || 0;
-    document.getElementById("progress-fill").style.width = pct + "%";
-    document.getElementById("progress-pct-text").textContent = pct + "%";
+function calcOverall(data) {
+  const scores = [
+    data.faithfulness_score,
+    data.relevance_score,
+    data.coherence_score,
+    data.completeness_score,
+  ].filter(s => typeof s === 'number');
+  if (!scores.length) return 0;
+  return scores.reduce((a,b) => a+b, 0) / scores.length;
+}
 
-    const modelLabel = MODEL_CATALOG.find(m => m.id === ev.model)?.label || ev.model;
-    const color = MODEL_COLOR_MAP[ev.model] || "var(--green)";
-    document.getElementById("progress-label-text").textContent =
-      `${modelLabel} — ${ev.scenario.replace(/_/g,' ')}`;
+function setButtonsDisabled(disabled) {
+  document.getElementById('run-eval-btn').disabled = disabled;
+  document.getElementById('run-btn-sidebar').disabled = disabled;
 
-    // Live log
-    const log = document.getElementById("live-log");
-    const line = document.createElement("div");
-    line.innerHTML =
-      `<span style="color:${color};font-weight:600">${modelLabel.substring(0,14)}</span>` +
-      ` / <span style="color:var(--text-muted)">${ev.scenario.replace(/_/g,' ')}</span>` +
-      ` → <span style="color:var(--green)">${ev.score}</span>`;
-    log.appendChild(line);
-    log.scrollTop = log.scrollHeight;
-
-  } else if (ev.event === "complete") {
-    lastResults = ev.results;
-    renderAll(lastResults);
-    document.getElementById("run-status-badge").textContent = "Complete";
-    document.getElementById("run-status-badge").style.background = "var(--green-dim)";
-    document.getElementById("run-status-badge").style.color = "var(--green)";
-    document.getElementById("run-status-badge").style.borderColor = "rgba(34,197,94,0.2)";
-    document.getElementById("run-ts").textContent = new Date().toLocaleTimeString();
-    toast("Evaluation complete!", "success");
-
-  } else if (ev.event === "error") {
-    toast("Error: " + (ev.message || "Unknown error"), "error");
+  if (disabled) {
+    document.getElementById('run-eval-btn').innerHTML =
+      '<span class="spinner"></span> Evaluating…';
+    document.getElementById('run-btn-sidebar').innerHTML =
+      '<span class="spinner"></span> Evaluating…';
+  } else {
+    document.getElementById('run-eval-btn').innerHTML =
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
+    document.getElementById('run-btn-sidebar').innerHTML =
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
   }
-}
-
-function cancelRun() {
-  cancelRequested = true;
-  resetRunBtn();
-  toast("Evaluation cancelled.", "info");
-}
-
-function resetRunBtn() {
-  document.getElementById("run-btn").disabled = false;
-  document.getElementById("run-btn").innerHTML =
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
-  document.getElementById("cancel-btn").classList.remove("visible");
-  document.getElementById("progress-wrap").classList.remove("visible");
-  document.getElementById("progress-fill").classList.remove("running");
-  document.getElementById("live-log").classList.remove("visible");
 }
 
 // ===================================================================
-// RENDER ALL
+// RENDER SCORES
 // ===================================================================
-function renderAll(results) {
-  renderKPIs(results);
-  renderRadar(results);
-  renderLeaderboard(results);
-  // Auto-select first scenario for inspector
-  const firstScenario = getFirstScenarioId(results);
-  if (firstScenario) {
-    document.getElementById("inspector-scenario-select").value = firstScenario;
+function renderScores(data) {
+  const metrics = {
+    faithfulness:  data.faithfulness_score,
+    relevance:     data.relevance_score,
+    coherence:     data.coherence_score,
+    completeness:  data.completeness_score,
+  };
+
+  const sidebarKeys = {
+    faithfulness:  'faith',
+    relevance:     'relev',
+    coherence:     'coher',
+    completeness:  'comp',
+  };
+
+  for (const [metric, score] of Object.entries(metrics)) {
+    const numScore = typeof score === 'number' ? score : 0;
+
+    // Bar height: score/10 * 80px
+    const barH = Math.max(4, Math.round((numScore / 10) * 80));
+    const barEl = document.getElementById('bar-' + metric);
+    if (barEl) barEl.style.height = barH + 'px';
+
+    // Value
+    const valEl = document.getElementById('val-' + metric);
+    if (valEl) {
+      valEl.textContent = numScore.toFixed(1);
+      valEl.classList.remove('placeholder');
+    }
+
+    // Sidebar badge
+    const sbKey = sidebarKeys[metric];
+    const sbEl = document.getElementById('sb-' + sbKey + '-score');
+    if (sbEl) sbEl.textContent = numScore.toFixed(1);
   }
-  renderInspector();
+
+  // Overall
+  const overall = typeof data.overall_score === 'number'
+    ? data.overall_score
+    : calcOverall(data);
+
+  const overallEl = document.getElementById('val-overall');
+  if (overallEl) {
+    overallEl.textContent = overall.toFixed(1) + '/10';
+    overallEl.classList.remove('placeholder');
+  }
+
+  const overallSub = document.getElementById('overall-sub');
+  if (overallSub) {
+    const label = overall >= 8 ? 'Excellent' : overall >= 6 ? 'Good' : overall >= 4 ? 'Fair' : 'Poor';
+    overallSub.textContent = label + ' — ' + (data.model || 'LLM-as-a-Judge');
+  }
 }
 
-function getFirstScenarioId(results) {
-  for (const model of Object.values(results)) {
-    if (model.scenarios && model.scenarios.length > 0) {
-      return model.scenarios[0].scenario_id;
+// ===================================================================
+// RENDER REASONING
+// ===================================================================
+function renderReasoning(data) {
+  const reasonings = {
+    faithfulness:  data.faithfulness_reasoning  || data.reasoning?.faithfulness,
+    relevance:     data.relevance_reasoning      || data.reasoning?.relevance,
+    coherence:     data.coherence_reasoning      || data.reasoning?.coherence,
+    completeness:  data.completeness_reasoning   || data.reasoning?.completeness,
+  };
+
+  for (const [metric, text] of Object.entries(reasonings)) {
+    const el = document.getElementById('reasoning-' + metric);
+    if (el) {
+      if (text) {
+        el.textContent = text;
+        el.classList.remove('reasoning-empty');
+      } else {
+        el.textContent = 'No reasoning provided for this metric.';
+        el.classList.add('reasoning-empty');
+      }
     }
   }
-  return null;
 }
 
 // ===================================================================
-// KPIs
+// RENDER ADVERSARIAL TABLE
 // ===================================================================
-function renderKPIs(results) {
-  const models = Object.keys(results);
-  const totalModels = models.length;
-  const totalCases = models.reduce((sum, m) => sum + (results[m].scenarios?.length || 0), 0);
+function renderAdversarialTable(results) {
+  const tbody = document.getElementById('adv-table-body');
+  const empty = document.getElementById('adv-empty');
+  const wrap  = document.getElementById('adv-table-wrap');
 
-  let topModel = null, topScore = -Infinity;
-  let scoreSum = 0, scoreCount = 0;
-  for (const [mid, data] of Object.entries(results)) {
-    const score = data.overall || 0;
-    scoreSum += score;
-    scoreCount++;
-    if (score > topScore) { topScore = score; topModel = mid; }
+  if (!results || !results.length) {
+    empty.style.display = '';
+    wrap.style.display = 'none';
+    return;
   }
 
-  const avgScore = scoreCount > 0 ? (scoreSum / scoreCount).toFixed(1) : "—";
-  const topLabel = MODEL_CATALOG.find(m => m.id === topModel)?.label || topModel || "—";
+  empty.style.display = 'none';
+  wrap.style.display = '';
 
-  document.getElementById("kpi-models").textContent = totalModels || "—";
-  document.getElementById("kpi-models-sub").textContent =
-    totalModels > 0 ? `${totalModels} model${totalModels !== 1 ? "s" : ""} evaluated` : "No run yet";
-  document.getElementById("kpi-cases").textContent = totalCases || "—";
-  document.getElementById("kpi-cases-sub").textContent =
-    totalCases > 0 ? `${allScenarios.length} scenarios selected` : "Across all scenarios";
-  document.getElementById("kpi-top").textContent = topLabel || "—";
-  document.getElementById("kpi-top-sub").textContent =
-    topScore > 0 ? `Score: ${topScore.toFixed(1)}` : "Score: —";
-  document.getElementById("kpi-avg").textContent = avgScore;
-}
+  tbody.innerHTML = results.map((row, i) => {
+    const overall = typeof row.overall_score === 'number' ? row.overall_score : (
+      [row.faithfulness_score, row.relevance_score, row.coherence_score, row.completeness_score]
+        .filter(s => typeof s === 'number')
+        .reduce((a,b,_,arr) => a + b/arr.length, 0)
+    );
+    const badgeClass = overall >= 7 ? 'high' : overall >= 4.5 ? 'mid' : 'low';
 
-// ===================================================================
-// RADAR CHART (pure SVG)
-// ===================================================================
-const RADAR_AXES = ["Accuracy", "Coherence", "Factuality", "Safety", "Tool Use", "Reasoning"];
-
-function renderRadar(results) {
-  const models = Object.keys(results);
-  if (!models.length) return;
-
-  const wrap = document.getElementById("radar-wrap");
-  const N = RADAR_AXES.length;
-  const CX = 140, CY = 140, R = 105;
-  const levels = 5;
-
-  // Compute angle for each axis
-  const angle = (i) => (Math.PI * 2 * i / N) - Math.PI / 2;
-
-  // Grid polygon points for a given radius
-  const gridPoly = (r) => Array.from({length: N}, (_, i) => {
-    const a = angle(i);
-    return `${CX + r * Math.cos(a)},${CY + r * Math.sin(a)}`;
-  }).join(" ");
-
-  // Data polygon for a model
-  const dataPoly = (model_data) => {
-    const radar = model_data.radar || {};
-    return Array.from({length: N}, (_, i) => {
-      const val = (radar[RADAR_AXES[i]] || 0) / 10.0;
-      const r = val * R;
-      const a = angle(i);
-      return `${CX + r * Math.cos(a)},${CY + r * Math.sin(a)}`;
-    }).join(" ");
-  };
-
-  // Build SVG
-  let svg = `<svg id="radar-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      ${models.map((mid, mi) => {
-        const color = MODEL_COLOR_MAP[mid] || "#22c55e";
-        return `<radialGradient id="rg${mi}" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0.04"/>
-        </radialGradient>`;
-      }).join("")}
-    </defs>
-
-    <!-- Grid rings -->
-    ${Array.from({length: levels}, (_, i) => {
-      const r = R * (i + 1) / levels;
-      return `<polygon points="${gridPoly(r)}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
-    }).join("")}
-
-    <!-- Axis lines -->
-    ${Array.from({length: N}, (_, i) => {
-      const a = angle(i);
-      const x2 = CX + R * Math.cos(a);
-      const y2 = CY + R * Math.sin(a);
-      return `<line x1="${CX}" y1="${CY}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
-        stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
-    }).join("")}
-
-    <!-- Level labels -->
-    ${Array.from({length: levels}, (_, i) => {
-      const r = R * (i + 1) / levels;
-      const val = ((i + 1) * 2).toFixed(0);
-      return `<text x="${CX + 4}" y="${CY - r + 4}" font-size="7" fill="rgba(255,255,255,0.2)"
-        font-family="JetBrains Mono, monospace">${val}</text>`;
-    }).join("")}
-
-    <!-- Data polygons -->
-    ${models.map((mid, mi) => {
-      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
-      const pts = dataPoly(results[mid]);
-      return `<polygon points="${pts}" fill="url(#rg${mi})" stroke="${color}"
-        stroke-width="1.5" opacity="0.9"
-        class="radar-poly" data-model="${escHtml(mid)}"
-        style="cursor:pointer;filter:drop-shadow(0 0 4px ${color}55)"
-        onmouseenter="showRadarTooltip(event,'${escHtml(mid)}')"
-        onmousemove="moveRadarTooltip(event)"
-        onmouseleave="hideRadarTooltip()"/>
-      ${Array.from({length: N}, (_, i) => {
-        const radar = results[mid].radar || {};
-        const val = (radar[RADAR_AXES[i]] || 0) / 10.0;
-        const r = val * R;
-        const a = angle(i);
-        const px = CX + r * Math.cos(a);
-        const py = CY + r * Math.sin(a);
-        return `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3"
-          fill="${color}" stroke="var(--bg)" stroke-width="1.5"
-          style="filter:drop-shadow(0 0 4px ${color})"
-          onmouseenter="showRadarTooltip(event,'${escHtml(mid)}')"
-          onmousemove="moveRadarTooltip(event)"
-          onmouseleave="hideRadarTooltip()"/>`;
-      }).join("")}`;
-    }).join("")}
-
-    <!-- Axis labels -->
-    ${Array.from({length: N}, (_, i) => {
-      const a = angle(i);
-      const dist = R + 18;
-      const lx = CX + dist * Math.cos(a);
-      const ly = CY + dist * Math.sin(a);
-      const anchor = Math.abs(Math.cos(a)) < 0.1 ? "middle" :
-                     Math.cos(a) > 0 ? "start" : "end";
-      return `<text x="${lx.toFixed(1)}" y="${(ly + 4).toFixed(1)}"
-        text-anchor="${anchor}" font-size="9.5" fill="rgba(255,255,255,0.55)"
-        font-family="Inter, sans-serif" font-weight="600">${RADAR_AXES[i]}</text>`;
-    }).join("")}
-
-  </svg>`;
-
-  // Legend
-  let legend = `<div class="radar-legend">` +
-    models.map(mid => {
-      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
-      const label = MODEL_CATALOG.find(m => m.id === mid)?.label || mid;
-      return `<div class="radar-legend-item">
-        <span class="radar-legend-dot" style="background:${color};box-shadow:0 0 6px ${color}88"></span>
-        <span>${label}</span>
-      </div>`;
-    }).join("") + `</div>`;
-
-  wrap.innerHTML = svg + legend;
-}
-
-function showRadarTooltip(e, modelId) {
-  if (!lastResults || !lastResults[modelId]) return;
-  const color = MODEL_COLOR_MAP[modelId] || "#22c55e";
-  const label = MODEL_CATALOG.find(m => m.id === modelId)?.label || modelId;
-  const radar = lastResults[modelId].radar || {};
-  const tt = document.getElementById("radar-tooltip");
-  tt.innerHTML = `<div class="radar-tooltip-model" style="color:${color}">${label}</div>` +
-    RADAR_AXES.map(ax =>
-      `<div class="radar-tooltip-row"><span>${ax}</span><span>${(radar[ax] || 0).toFixed(1)}/10</span></div>`
-    ).join("");
-  tt.classList.add("visible");
-  moveRadarTooltip(e);
-}
-
-function moveRadarTooltip(e) {
-  const tt = document.getElementById("radar-tooltip");
-  tt.style.left = (e.clientX + 14) + "px";
-  tt.style.top  = (e.clientY - 10) + "px";
-}
-
-function hideRadarTooltip() {
-  document.getElementById("radar-tooltip").classList.remove("visible");
-}
-
-// ===================================================================
-// LEADERBOARD
-// ===================================================================
-const LB_COLS = [
-  { key: "#",       label: "#",         sortable: false },
-  { key: "model",   label: "Model",     sortable: true  },
-  { key: "overall", label: "Overall",   sortable: true  },
-  { key: "Accuracy",    label: "Accuracy",    sortable: true },
-  { key: "Coherence",   label: "Coherence",   sortable: true },
-  { key: "Factuality",  label: "Factuality",  sortable: true },
-  { key: "Safety",      label: "Safety",      sortable: true },
-  { key: "Tool Use",    label: "Tool Use",    sortable: true },
-];
-
-function renderLeaderboard(results) {
-  const wrap = document.getElementById("lb-table-wrap");
-  const models = Object.keys(results);
-  if (!models.length) return;
-
-  // Build rows
-  let rows = models.map(mid => {
-    const data = results[mid];
-    const radar = data.radar || {};
-    return {
-      model: mid,
-      label: MODEL_CATALOG.find(m => m.id === mid)?.label || mid,
-      color: MODEL_COLOR_MAP[mid] || "#22c55e",
-      overall: data.overall || 0,
-      ...Object.fromEntries(RADAR_AXES.map(ax => [ax, radar[ax] || 0])),
+    const scoreCell = (s) => {
+      const n = typeof s === 'number' ? s : 0;
+      const cls = n >= 7 ? 'high' : n >= 4.5 ? 'mid' : 'low';
+      return `<span class="score-badge ${cls}">${n.toFixed(1)}</span>`;
     };
-  });
 
-  // Sort
-  rows.sort((a, b) => {
-    let va = a[sortCol], vb = b[sortCol];
-    if (typeof va === "string") va = va.toLowerCase();
-    if (typeof vb === "string") vb = vb.toLowerCase();
-    return sortAsc ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
-  });
+    const perturbation = escHtml(row.perturbation_type || row.type || ('Test ' + (i+1)));
+    const modified = escHtml((row.modified_question || row.input || '').substring(0, 80)) +
+      ((row.modified_question || row.input || '').length > 80 ? '…' : '');
 
-  const medalClass = (i) => i === 0 ? "gold-row" : i === 1 ? "silver-row" : i === 2 ? "bronze-row" : "";
-  const rankEmoji  = (i) => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}`;
-  const rankClass  = (i) => i === 0 ? "rank-gold" : i === 1 ? "rank-silver" : i === 2 ? "rank-bronze" : "";
-
-  const maxOverall = Math.max(...rows.map(r => r.overall), 1);
-
-  const scoreBar = (val, max) => {
-    const pct = Math.min(100, (val / max) * 100).toFixed(1);
-    const displayVal = typeof val === "number" ? val.toFixed(1) : val;
-    return `<div class="score-bar-cell">
-      <div class="score-bar-track">
-        <div class="score-bar-fill" style="width:${pct}%;background:var(--green)"></div>
-      </div>
-      <span class="score-bar-num">${displayVal}</span>
-    </div>`;
-  };
-
-  const dimBar = (val) => {
-    const pct = Math.min(100, val * 10).toFixed(1);
-    const color = val >= 8 ? "var(--green)" : val >= 6 ? "var(--orange)" : "var(--red)";
-    return `<div class="score-bar-cell">
-      <div class="score-bar-track">
-        <div class="score-bar-fill" style="width:${pct}%;background:${color}"></div>
-      </div>
-      <span class="score-bar-num" style="color:${color}">${val.toFixed(1)}</span>
-    </div>`;
-  };
-
-  wrap.innerHTML = `<table class="lb-table">
-    <thead><tr>
-      ${LB_COLS.map(c => {
-        if (!c.sortable) return `<th>${c.label}</th>`;
-        const isSorted = sortCol === c.key;
-        return `<th class="${isSorted ? "sorted" : ""}" onclick="sortLeaderboard('${c.key}')">
-          ${c.label}
-          <span class="sort-arrow">${isSorted ? (sortAsc ? "↑" : "↓") : ""}</span>
-        </th>`;
-      }).join("")}
-    </tr></thead>
-    <tbody>
-      ${rows.map((row, i) =>
-        `<tr class="${medalClass(i)}" onclick="highlightModel('${escHtml(row.model)}')">
-          <td class="rank-cell ${rankClass(i)}">${rankEmoji(i)}</td>
-          <td><div class="model-dot-cell">
-            <span style="width:8px;height:8px;border-radius:50%;background:${row.color};
-              box-shadow:0 0 6px ${row.color}88;flex-shrink:0;display:inline-block"></span>
-            ${escHtml(row.label)}
-          </div></td>
-          <td>${scoreBar(row.overall, maxOverall)}</td>
-          ${["Accuracy","Coherence","Factuality","Safety","Tool Use"].map(ax =>
-            `<td>${dimBar(row[ax] || 0)}</td>`
-          ).join("")}
-        </tr>`
-      ).join("")}
-    </tbody>
-  </table>`;
-}
-
-function sortLeaderboard(col) {
-  if (sortCol === col) {
-    sortAsc = !sortAsc;
-  } else {
-    sortCol = col;
-    sortAsc = col === "model";
-  }
-  if (lastResults) renderLeaderboard(lastResults);
-}
-
-function highlightModel(modelId) {
-  // Highlight in radar
-  const polys = document.querySelectorAll(".radar-poly");
-  polys.forEach(p => {
-    p.style.opacity = p.dataset.model === modelId ? "1" : "0.3";
-  });
-  setTimeout(() => polys.forEach(p => p.style.opacity = "0.9"), 2000);
+    return `<tr>
+      <td style="font:600 12px 'JetBrains Mono';color:rgba(155,135,212,0.5)">${i+1}</td>
+      <td style="font:700 12.5px 'Nunito';color:var(--accent-end)">${perturbation}</td>
+      <td style="font:400 12px 'JetBrains Mono';color:rgba(240,238,255,0.5);max-width:200px">${modified}</td>
+      <td>${scoreCell(row.faithfulness_score)}</td>
+      <td>${scoreCell(row.relevance_score)}</td>
+      <td>${scoreCell(row.coherence_score)}</td>
+      <td>${scoreCell(row.completeness_score)}</td>
+      <td><span class="score-badge ${badgeClass}">${overall.toFixed(1)}</span></td>
+    </tr>`;
+  }).join('');
 }
 
 // ===================================================================
-// TEST CASE INSPECTOR
+// TOGGLE ADVERSARIAL TABLE
 // ===================================================================
-function renderInspector() {
-  const scenarioId = document.getElementById("inspector-scenario-select").value;
-  const body = document.getElementById("inspector-body");
-
-  if (!lastResults || !scenarioId) {
-    body.innerHTML = `<div class="empty-state">
-      <div class="empty-state-icon">⊙</div>
-      <p>Run an evaluation, then select a scenario<br>to compare model responses side-by-side.</p>
-    </div>`;
-    return;
-  }
-
-  const models = Object.keys(lastResults).slice(0, 3);
-  if (!models.length) {
-    body.innerHTML = `<div class="empty-state"><p>No models in results.</p></div>`;
-    return;
-  }
-
-  body.innerHTML = `<div class="inspector-grid">
-    ${models.map(mid => {
-      const color = MODEL_COLOR_MAP[mid] || "#22c55e";
-      const label = MODEL_CATALOG.find(m => m.id === mid)?.label || mid;
-      const scenarios = lastResults[mid]?.scenarios || [];
-      const sc = scenarios.find(s => s.scenario_id === scenarioId);
-      if (!sc) {
-        return `<div class="inspector-col">
-          <div class="inspector-model-header">
-            <span class="model-color-dot" style="background:${color}"></span>
-            <span class="inspector-model-name" style="color:${color}">${escHtml(label)}</span>
-          </div>
-          <div class="inspector-response" style="color:var(--text-muted);font-style:italic">
-            No data for this scenario.
-          </div>
-        </div>`;
-      }
-      const score = (sc.score_pct || sc.weighted_total * 10 || 0).toFixed(1);
-      const response = sc.response || "(no response captured)";
-      const reasoning = sc.judge_reasoning || "(no reasoning captured)";
-      const uid = `judge-${mid.replace(/[^a-z0-9]/gi, "_")}_${scenarioId.replace(/[^a-z0-9]/gi, "_")}`;
-      return `<div class="inspector-col">
-        <div class="inspector-model-header">
-          <span class="model-color-dot" style="background:${color}"></span>
-          <span class="inspector-model-name" style="color:${color}">${escHtml(label)}</span>
-          <span class="inspector-score">${score}</span>
-        </div>
-        <div class="inspector-response">${escHtml(response)}</div>
-        <button class="judge-btn" onclick="toggleReasoning('${uid}')">View Judge Reasoning</button>
-        <div class="judge-reasoning" id="${uid}">${escHtml(reasoning)}</div>
-      </div>`;
-    }).join("")}
-  </div>`;
-}
-
-function toggleReasoning(uid) {
-  const el = document.getElementById(uid);
-  if (el) el.classList.toggle("visible");
+function toggleAdvTable() {
+  advTableVisible = !advTableVisible;
+  const container = document.getElementById('adv-table-container');
+  const btn = document.getElementById('adv-collapse-btn');
+  container.style.display = advTableVisible ? '' : 'none';
+  btn.textContent = advTableVisible ? 'Collapse' : 'Expand';
 }
 
 // ===================================================================
 // UTILITIES
 // ===================================================================
 function escHtml(str) {
-  if (str === null || str === undefined) return "";
+  if (str === null || str === undefined) return '';
   return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-function toast(message, type = "info") {
-  const container = document.getElementById("toast-container");
-  const el = document.createElement("div");
-  el.className = "toast " + type;
-  el.innerHTML = `<span class="toast-dot"></span>${escHtml(message)}`;
+function toast(message, type = 'info') {
+  const icons = { error: '✕', success: '✓', info: 'ℹ' };
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span>${escHtml(message)}`;
   container.appendChild(el);
   setTimeout(() => {
-    el.style.opacity = "0";
-    el.style.transform = "translateY(8px)";
-    el.style.transition = "all 0.2s";
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    el.style.transition = 'all 0.2s';
     setTimeout(() => el.remove(), 200);
   }, 4000);
 }
 
 // ===================================================================
-// SCROLL REVEAL
+// INIT
 // ===================================================================
-(function initReveal() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("visible");
-        observer.unobserve(entry.target);
-      }
+document.addEventListener('DOMContentLoaded', () => {
+  renderHistory();
+
+  // Keep tab values in sync on textarea input
+  document.querySelectorAll('.eval-textarea').forEach(ta => {
+    ta.addEventListener('input', () => {
+      tabValues[ta.dataset.tab] = ta.value;
     });
-  }, { threshold: 0.08 });
-
-  function observeReveal() {
-    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
-  }
-
-  // Observe on DOM ready + small delay so layout is stable
-  document.addEventListener("DOMContentLoaded", () => setTimeout(observeReveal, 60));
-})();
-
-// ===================================================================
-// PROGRESS BAR SHIMMER — add/remove .running class via startRun
-// The shimmer class is toggled directly in startRun / resetRunBtn below.
-// ===================================================================
+  });
+});
 </script>
 </body>
 </html>
