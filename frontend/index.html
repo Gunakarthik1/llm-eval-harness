@@ -305,6 +305,43 @@ body {
   flex-shrink: 0;
 }
 
+/* Scenario items in sidebar */
+.scenario-category-label {
+  font: 700 9px 'Nunito';
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(155,135,212,0.35);
+  padding: 6px 8px 2px;
+}
+
+.scenario-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font: 400 11px 'JetBrains Mono';
+  color: rgba(155,135,212,0.6);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.scenario-sidebar-item:hover { background: rgba(124,58,237,0.08); color: var(--ink); }
+.scenario-sidebar-item.selected {
+  background: rgba(124,58,237,0.18);
+  color: var(--accent-end);
+}
+.scenario-sidebar-item .chk {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  border: 1.5px solid rgba(124,58,237,0.35);
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+.scenario-sidebar-item.selected .chk {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 /* ============================================================
    MAIN PANEL
    ============================================================ */
@@ -367,94 +404,122 @@ body {
 }
 
 /* ============================================================
-   EVAL INPUT CARD
+   MODEL COMPARISON CARD
    ============================================================ */
-.eval-tabs {
+.model-comp-body {
+  padding: 20px 20px 16px;
   display: flex;
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  gap: 16px;
 }
 
-.eval-tab {
-  padding: 11px 20px;
-  font: 700 12.5px 'Nunito';
+.model-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.model-row-label {
+  font: 700 12px 'Nunito';
   color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
-  position: relative;
-  bottom: -1px;
-}
-.eval-tab:hover { color: rgba(167,139,250,0.8); }
-.eval-tab.active {
-  color: var(--accent-end);
-  border-bottom-color: var(--accent-end);
-  background: rgba(124,58,237,0.05);
+  width: 64px;
+  flex-shrink: 0;
 }
 
-.eval-body { padding: 16px; }
+.model-select-wrap {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
 
-.eval-textarea {
-  width: 100%;
-  min-height: 90px;
+.model-select {
+  flex: 1;
   background: rgba(19,15,30,0.75);
   border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 13px 14px;
-  font: 400 13.5px 'JetBrains Mono';
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: 600 12.5px 'Nunito';
   color: var(--ink);
-  resize: vertical;
-  line-height: 1.65;
-  transition: border-color 0.15s;
   outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%239b87d4'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+.model-select:focus { border-color: rgba(124,58,237,0.5); }
+.model-select option { background: #201a30; color: var(--ink); }
+
+.model-custom-input {
+  flex: 1;
+  background: rgba(19,15,30,0.75);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: 400 12.5px 'JetBrains Mono';
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s;
   display: none;
 }
-.eval-textarea.active-tab { display: block; }
-.eval-textarea:focus {
-  border-color: rgba(124,58,237,0.5);
-  background: rgba(19,15,30,0.9);
+.model-custom-input:focus { border-color: rgba(124,58,237,0.5); }
+.model-custom-input::placeholder { color: rgba(155,135,212,0.35); }
+
+.model-custom-toggle {
+  font: 600 11px 'Nunito';
+  color: rgba(155,135,212,0.5);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(124,58,237,0.15);
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: none;
 }
-.eval-textarea::placeholder { color: rgba(155,135,212,0.3); }
+.model-custom-toggle:hover { color: var(--accent-end); border-color: rgba(124,58,237,0.3); }
+
+.scenario-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(124,58,237,0.1);
+}
+
+.scenario-select-label {
+  font: 700 12px 'Nunito';
+  color: var(--muted);
+  flex: 1;
+}
+
+.scenario-count-badge {
+  font: 600 11.5px 'JetBrains Mono';
+  color: var(--accent-end);
+  background: rgba(124,58,237,0.15);
+  border: 1px solid rgba(124,58,237,0.2);
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.scenario-action-link {
+  font: 600 11px 'Nunito';
+  color: rgba(155,135,212,0.5);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.12s;
+}
+.scenario-action-link:hover { color: var(--accent-end); }
 
 .eval-run-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 10px 16px 14px;
+  padding: 4px 0 0;
   gap: 12px;
-}
-
-.adv-toggle-label {
-  font: 600 12px 'Nunito';
-  color: var(--muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  user-select: none;
-  transition: color 0.15s;
-}
-.adv-toggle-label:hover { color: var(--ink); }
-
-.adv-toggle-label input[type="checkbox"] {
-  appearance: none;
-  width: 14px; height: 14px;
-  border: 1.5px solid rgba(124,58,237,0.4);
-  border-radius: 3px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.15s;
-}
-.adv-toggle-label input[type="checkbox"]:checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.adv-toggle-label input[type="checkbox"]:checked::after {
-  content: '✓';
-  position: absolute;
-  top: -2px; left: 1px;
-  font-size: 10px;
-  color: white;
-  font-weight: 700;
 }
 
 .run-eval-btn {
@@ -483,115 +548,313 @@ body {
 }
 
 /* ============================================================
-   SCORES PANEL
+   PROGRESS CARD
    ============================================================ */
-.scores-card-body {
-  padding: 22px 24px 18px;
-}
-
-.scores-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+.progress-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 }
 
-.score-metric { text-align: center; }
-
-.score-metric-bar {
-  height: 80px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin-bottom: 8px;
-  gap: 0;
-}
-
-.score-bar-inner {
-  width: 28px;
-  border-radius: 4px 4px 0 0;
-  background: linear-gradient(0deg, #7c3aed, #a78bfa);
-  transition: height 0.85s cubic-bezier(0.16,1,0.3,1);
-  min-height: 4px;
-  box-shadow: 0 0 10px rgba(124,58,237,0.4);
-  position: relative;
-}
-
-.score-bar-track {
-  width: 28px;
-  height: 80px;
-  background: rgba(124,58,237,0.08);
-  border-radius: 4px 4px 0 0;
-  display: flex;
-  align-items: flex-end;
-  border: 1px solid rgba(124,58,237,0.12);
-  border-bottom: none;
-}
-
-.score-value {
-  font: 900 26px 'Nunito';
-  color: var(--ink);
-  line-height: 1;
-  transition: all 0.6s;
-}
-.score-value.placeholder { color: rgba(155,135,212,0.25); font-size: 20px; }
-
-.score-name {
-  font: 700 10.5px 'Nunito';
-  color: var(--muted);
-  letter-spacing: 0.05em;
-  margin-top: 5px;
-  text-transform: uppercase;
-}
-
-.score-subdot {
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: rgba(124,58,237,0.4);
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
-.overall-score {
-  text-align: center;
-  border-top: 1px solid var(--border);
-  margin-top: 18px;
-  padding-top: 16px;
+.progress-title-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+}
+
+.progress-label {
+  font: 700 13px 'Nunito';
+  color: var(--ink);
+}
+
+.progress-pct {
+  font: 700 13px 'JetBrains Mono';
+  color: var(--accent-end);
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(124,58,237,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+}
+
+.progress-detail {
+  font: 400 11.5px 'JetBrains Mono';
+  color: rgba(155,135,212,0.55);
+}
+
+.live-scores-row {
+  display: flex;
   gap: 16px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(124,58,237,0.1);
 }
 
-.overall-score-label {
-  font: 700 11px 'Nunito';
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.live-score-item {
+  flex: 1;
+  background: rgba(124,58,237,0.06);
+  border: 1px solid rgba(124,58,237,0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.live-score-model {
+  font: 700 11px 'JetBrains Mono';
   color: var(--muted);
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.overall-score .val {
-  font: 900 44px 'Nunito';
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.live-score-val {
+  font: 900 28px 'Nunito';
+  color: var(--ink);
   line-height: 1;
-  transition: all 0.6s;
 }
-.overall-score .val.placeholder {
-  background: rgba(155,135,212,0.15);
-  -webkit-text-fill-color: transparent;
+.live-score-val.placeholder { color: rgba(155,135,212,0.2); font-size: 22px; }
+
+/* ============================================================
+   RESULTS CARD
+   ============================================================ */
+.results-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.overall-score-sub {
-  font: 400 12px 'JetBrains Mono';
-  color: rgba(155,135,212,0.5);
-  margin-top: 2px;
+.results-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-model-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.result-model-name {
+  font: 700 12.5px 'JetBrains Mono';
+  color: var(--accent-end);
+  width: 160px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-model-score {
+  font: 800 15px 'Nunito';
+  color: var(--ink);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.result-model-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(124,58,237,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.result-model-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transition: width 0.8s cubic-bezier(0.16,1,0.3,1);
+}
+
+.result-model-bar-fill.model-b {
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+}
+
+.winner-banner {
+  background: rgba(74,222,128,0.07);
+  border: 1px solid rgba(74,222,128,0.2);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font: 700 12.5px 'Nunito';
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.winner-banner.tie {
+  background: rgba(251,191,36,0.07);
+  border-color: rgba(251,191,36,0.2);
+  color: var(--yellow);
 }
 
 /* ============================================================
-   REASONING CARD
+   RADAR (TEXT BARS)
+   ============================================================ */
+.radar-section-label {
+  font: 700 10px 'Nunito';
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.radar-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.radar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.radar-dim-name {
+  font: 700 11.5px 'Nunito';
+  color: var(--muted);
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.radar-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.radar-bar-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-bar-track {
+  width: 120px;
+  height: 5px;
+  background: rgba(124,58,237,0.08);
+  border-radius: 99px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.radar-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.radar-bar-fill.b {
+  background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+}
+
+.radar-score {
+  font: 700 11.5px 'JetBrains Mono';
+  color: var(--ink);
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.radar-model-tag {
+  font: 400 10px 'JetBrains Mono';
+  color: rgba(155,135,212,0.45);
+  width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   SCENARIO BREAKDOWN TABLE
+   ============================================================ */
+.adv-table-wrap {
+  overflow-x: auto;
+}
+
+.adv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adv-table th {
+  padding: 10px 18px;
+  text-align: left;
+  font: 700 10px 'Nunito';
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.adv-table td {
+  padding: 11px 18px;
+  font: 400 12.5px 'Nunito';
+  color: rgba(240,238,255,0.65);
+  border-bottom: 1px solid rgba(124,58,237,0.07);
+  vertical-align: middle;
+}
+.adv-table tr:last-child td { border-bottom: none; }
+.adv-table tbody tr { transition: background 0.12s; cursor: pointer; }
+.adv-table tbody tr:hover td { background: rgba(124,58,237,0.04); }
+.adv-table tbody tr.selected-row td { background: rgba(124,58,237,0.08); }
+
+.score-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font: 700 11.5px 'Nunito';
+  background: rgba(124,58,237,0.15);
+  color: var(--accent-end);
+  border: 1px solid rgba(124,58,237,0.2);
+}
+
+.score-badge.high { background: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+.score-badge.mid  { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+.score-badge.low  { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.2); }
+.score-badge.pos  { background: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+.score-badge.neg  { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.2); }
+
+.adv-empty {
+  text-align: center;
+  padding: 32px 20px;
+  font: 400 13px 'Nunito';
+  color: rgba(155,135,212,0.3);
+}
+
+.adv-toggle-btn {
+  font: 600 12px 'Nunito';
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.adv-toggle-btn:hover { color: var(--ink); background: rgba(124,58,237,0.1); }
+
+/* ============================================================
+   JUDGE REASONING
    ============================================================ */
 .reasoning-body {
   padding: 18px 20px;
@@ -634,71 +897,81 @@ body {
 }
 
 /* ============================================================
-   ADVERSARIAL TABLE
+   SCORES PANEL (sidebar metrics)
    ============================================================ */
-.adv-table-wrap {
-  overflow-x: auto;
+.scores-card-body {
+  padding: 22px 24px 18px;
 }
 
-.adv-table {
-  width: 100%;
-  border-collapse: collapse;
+.scores-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
 }
 
-.adv-table th {
-  padding: 10px 18px;
-  text-align: left;
-  font: 700 10px 'Nunito';
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+.score-metric { text-align: center; }
+
+.score-metric-bar {
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  margin-bottom: 8px;
+  gap: 0;
+}
+
+.score-bar-inner {
+  width: 28px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(0deg, #7c3aed, #a78bfa);
+  transition: height 0.85s cubic-bezier(0.16,1,0.3,1);
+  min-height: 4px;
+  box-shadow: 0 0 10px rgba(124,58,237,0.4);
+  position: relative;
+}
+
+.score-bar-track {
+  width: 28px;
+  height: 80px;
+  background: rgba(124,58,237,0.08);
+  border-radius: 4px 4px 0 0;
+  display: flex;
+  align-items: flex-end;
+  border: 1px solid rgba(124,58,237,0.12);
+  border-bottom: none;
+}
+
+.score-value {
+  font: 900 24px 'Nunito';
+  color: var(--ink);
+  line-height: 1;
+  transition: all 0.6s;
+}
+.score-value.placeholder { color: rgba(155,135,212,0.25); font-size: 18px; }
+
+.score-name {
+  font: 700 10.5px 'Nunito';
   color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  letter-spacing: 0.05em;
+  margin-top: 5px;
+  text-transform: uppercase;
 }
 
-.adv-table td {
-  padding: 11px 18px;
-  font: 400 12.5px 'Nunito';
-  color: rgba(240,238,255,0.65);
-  border-bottom: 1px solid rgba(124,58,237,0.07);
+.score-subdot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(124,58,237,0.4);
+  margin-right: 4px;
   vertical-align: middle;
 }
-.adv-table tr:last-child td { border-bottom: none; }
-.adv-table tbody tr { transition: background 0.12s; }
-.adv-table tbody tr:hover td { background: rgba(124,58,237,0.04); }
 
-.score-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font: 700 11.5px 'Nunito';
-  background: rgba(124,58,237,0.15);
-  color: var(--accent-end);
-  border: 1px solid rgba(124,58,237,0.2);
+/* ============================================================
+   LEADERBOARD
+   ============================================================ */
+.leaderboard-body {
+  padding: 0;
 }
-
-.score-badge.high { background: rgba(74,222,128,0.12); color: #4ade80; border-color: rgba(74,222,128,0.2); }
-.score-badge.mid  { background: rgba(251,191,36,0.12); color: #fbbf24; border-color: rgba(251,191,36,0.2); }
-.score-badge.low  { background: rgba(248,113,113,0.12); color: #f87171; border-color: rgba(248,113,113,0.2); }
-
-.adv-empty {
-  text-align: center;
-  padding: 32px 20px;
-  font: 400 13px 'Nunito';
-  color: rgba(155,135,212,0.3);
-}
-
-.adv-toggle-btn {
-  font: 600 12px 'Nunito';
-  color: var(--muted);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.adv-toggle-btn:hover { color: var(--ink); background: rgba(124,58,237,0.1); }
 
 /* ============================================================
    SPINNER
@@ -783,7 +1056,7 @@ body {
   <span class="title-file">eval-harness.run</span>
   <span class="title-sep">·</span>
   <span class="title-file" id="title-status">Ready</span>
-  <span class="title-ver">v1.0</span>
+  <span class="title-ver">v2.0</span>
 </div>
 
 <!-- ============================================================
@@ -796,17 +1069,22 @@ body {
        ============================================================ -->
   <aside class="sidebar" id="sidebar">
 
-    <!-- EXPLORER -->
+    <!-- EXPLORER: Scenarios -->
     <div class="sidebar-section">
-      <div class="sidebar-section-label">Explorer</div>
-
-      <div class="sidebar-item active" id="sb-new-eval" onclick="clearForm()">
-        <span class="icon">📋</span>
-        <span>New Evaluation</span>
+      <div class="sidebar-section-label">
+        <span>Explorer</span>
+        <span style="display:flex;gap:6px">
+          <span class="scenario-action-link" onclick="selectAllScenarios()">All</span>
+          <span style="color:rgba(124,58,237,0.2)">/</span>
+          <span class="scenario-action-link" onclick="clearAllScenarios()">Clear</span>
+        </span>
+      </div>
+      <div id="scenario-list">
+        <div style="font:400 11px 'JetBrains Mono';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">Loading scenarios…</div>
       </div>
     </div>
 
-    <button class="run-btn-sidebar" id="run-btn-sidebar" onclick="submitEval()">
+    <button class="run-btn-sidebar" id="run-btn-sidebar" onclick="runEvaluation()">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
       Run Evaluation
     </button>
@@ -817,25 +1095,35 @@ body {
     <div class="sidebar-section">
       <div class="sidebar-section-label">Metrics</div>
 
-      <div class="sidebar-item" id="sb-faith" onclick="scrollToScores()">
+      <div class="sidebar-item">
         <span class="icon">🎯</span>
-        <span>Faithfulness</span>
-        <span class="badge" id="sb-faith-score">—</span>
+        <span>Accuracy</span>
+        <span class="badge" id="sb-accuracy-score">—</span>
       </div>
-      <div class="sidebar-item" id="sb-relev" onclick="scrollToScores()">
-        <span class="icon">🔗</span>
-        <span>Relevance</span>
-        <span class="badge" id="sb-relev-score">—</span>
-      </div>
-      <div class="sidebar-item" id="sb-coher" onclick="scrollToScores()">
+      <div class="sidebar-item">
         <span class="icon">💡</span>
         <span>Coherence</span>
-        <span class="badge" id="sb-coher-score">—</span>
+        <span class="badge" id="sb-coherence-score">—</span>
       </div>
-      <div class="sidebar-item" id="sb-comp" onclick="scrollToScores()">
-        <span class="icon">📊</span>
-        <span>Completeness</span>
-        <span class="badge" id="sb-comp-score">—</span>
+      <div class="sidebar-item">
+        <span class="icon">✅</span>
+        <span>Factuality</span>
+        <span class="badge" id="sb-factuality-score">—</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🛡</span>
+        <span>Safety</span>
+        <span class="badge" id="sb-safety-score">—</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🔧</span>
+        <span>Tool Use</span>
+        <span class="badge" id="sb-tooluse-score">—</span>
+      </div>
+      <div class="sidebar-item">
+        <span class="icon">🧠</span>
+        <span>Reasoning</span>
+        <span class="badge" id="sb-reasoning-score">—</span>
       </div>
     </div>
 
@@ -865,171 +1153,200 @@ body {
        ============================================================ -->
   <main class="main-panel" id="main-panel">
 
-    <!-- ── EVAL INPUT CARD ─────────────────────────────────────── -->
+    <!-- MODEL COMPARISON CARD -->
     <div class="panel-card" id="eval-input-card">
-      <div class="eval-tabs" id="eval-tabs">
-        <div class="eval-tab active" data-tab="question" onclick="switchTab('question')">Question</div>
-        <div class="eval-tab" data-tab="answer" onclick="switchTab('answer')">Answer</div>
-        <div class="eval-tab" data-tab="context" onclick="switchTab('context')">Context</div>
-      </div>
-
-      <div class="eval-body">
-        <textarea
-          class="eval-textarea active-tab"
-          id="input-question"
-          data-tab="question"
-          placeholder="Enter the question that was asked to the LLM…"
-          rows="5"
-        ></textarea>
-        <textarea
-          class="eval-textarea"
-          id="input-answer"
-          data-tab="answer"
-          placeholder="Enter the LLM's answer / response to evaluate…"
-          rows="5"
-        ></textarea>
-        <textarea
-          class="eval-textarea"
-          id="input-context"
-          data-tab="context"
-          placeholder="Enter the reference context / ground truth (optional)…"
-          rows="5"
-        ></textarea>
-      </div>
-
-      <div class="eval-run-bar">
-        <label class="adv-toggle-label">
-          <input type="checkbox" id="adv-toggle" checked>
-          Run Adversarial Tests
-        </label>
-        <button class="run-eval-btn" id="run-eval-btn" onclick="submitEval()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Run Evaluation
-        </button>
-      </div>
-    </div>
-
-    <!-- ── SCORES PANEL ───────────────────────────────────────── -->
-    <div class="panel-card" id="scores-card">
       <div class="panel-card-header">
         <div class="panel-card-title">
-          <div class="title-icon">◈</div>
-          Rubric Scores
+          <div class="title-icon">⚖</div>
+          Model Comparison
         </div>
         <span style="font:400 11px 'JetBrains Mono';color:rgba(155,135,212,0.4)" id="scores-timestamp"></span>
       </div>
+
+      <div class="model-comp-body">
+        <!-- Model A -->
+        <div class="model-row">
+          <span class="model-row-label">Model A</span>
+          <div class="model-select-wrap">
+            <select class="model-select" id="model-a-select" onchange="handleModelSelectChange('a')">
+              <option value="gpt-4o">gpt-4o</option>
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="gpt-3.5-turbo" selected>gpt-3.5-turbo</option>
+              <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
+              <option value="claude-3-haiku">claude-3-haiku</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+            <input type="text" class="model-custom-input" id="model-a-custom" placeholder="e.g. mistral-7b-instruct" />
+            <button class="model-custom-toggle" id="model-a-toggle" onclick="toggleCustomModel('a')">Custom</button>
+          </div>
+        </div>
+
+        <!-- Model B -->
+        <div class="model-row">
+          <span class="model-row-label">Model B</span>
+          <div class="model-select-wrap">
+            <select class="model-select" id="model-b-select" onchange="handleModelSelectChange('b')">
+              <option value="gpt-4o" selected>gpt-4o</option>
+              <option value="gpt-4o-mini">gpt-4o-mini</option>
+              <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+              <option value="claude-3-5-sonnet">claude-3-5-sonnet</option>
+              <option value="claude-3-haiku">claude-3-haiku</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+              <option value="__custom__">Custom…</option>
+            </select>
+            <input type="text" class="model-custom-input" id="model-b-custom" placeholder="e.g. llama-3-70b" />
+            <button class="model-custom-toggle" id="model-b-toggle" onclick="toggleCustomModel('b')">Custom</button>
+          </div>
+        </div>
+
+        <!-- Scenario selector row -->
+        <div class="scenario-select-row">
+          <span class="scenario-select-label">
+            Scenarios: <span id="selected-count-label" class="scenario-count-badge">18 selected (all)</span>
+          </span>
+          <span class="scenario-action-link" onclick="clearAllScenarios()">Clear</span>
+          <span class="scenario-action-link" style="margin-left:6px" onclick="selectAllScenarios()">Select All</span>
+        </div>
+
+        <!-- Run button -->
+        <div class="eval-run-bar">
+          <button class="run-eval-btn" id="run-eval-btn" onclick="runEvaluation()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Run Evaluation
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESS CARD (hidden until running) -->
+    <div class="panel-card" id="progress-card" style="display:none">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">⟳</div>
+          Running Evaluation
+        </div>
+      </div>
+      <div class="progress-body">
+        <div class="progress-title-row">
+          <span class="progress-label" id="progress-label">Initializing…</span>
+          <span class="progress-pct" id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+        <div class="progress-detail" id="progress-detail">Connecting to evaluation service…</div>
+        <div class="live-scores-row">
+          <div class="live-score-item">
+            <div class="live-score-model" id="live-model-a-name">Model A</div>
+            <div class="live-score-val placeholder" id="live-score-a">—</div>
+          </div>
+          <div class="live-score-item">
+            <div class="live-score-model" id="live-model-b-name">Model B</div>
+            <div class="live-score-val placeholder" id="live-score-b">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS CARD (hidden until complete) -->
+    <div class="panel-card" id="results-card" style="display:none">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">◈</div>
+          Results
+        </div>
+        <span style="font:400 11px 'JetBrains Mono';color:rgba(155,135,212,0.4)" id="results-timestamp"></span>
+      </div>
+
+      <div class="results-body">
+        <!-- Overview bars -->
+        <div class="results-overview" id="results-overview"></div>
+
+        <!-- 6-dim radar -->
+        <div>
+          <div class="radar-section-label">6-Dimension Radar</div>
+          <div id="radar-rows"></div>
+        </div>
+
+        <!-- Scenario breakdown -->
+        <div>
+          <div class="radar-section-label">Scenario Breakdown</div>
+          <div class="adv-table-wrap">
+            <table class="adv-table">
+              <thead>
+                <tr>
+                  <th>Scenario</th>
+                  <th>Category</th>
+                  <th id="th-model-a">Model A</th>
+                  <th id="th-model-b">Model B</th>
+                  <th>Delta</th>
+                </tr>
+              </thead>
+              <tbody id="scenario-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Judge reasoning for selected scenario -->
+        <div id="judge-reasoning-section" style="display:none">
+          <div class="radar-section-label">Judge Reasoning</div>
+          <div class="reasoning-body" style="padding:0">
+            <div class="reasoning-label" id="judge-scenario-label">Scenario</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <div style="flex:1;min-width:240px">
+                <div style="font:700 10px 'Nunito';letter-spacing:0.08em;text-transform:uppercase;color:rgba(155,135,212,0.5);margin-bottom:6px" id="judge-model-a-label">Model A</div>
+                <div class="reasoning-text" id="judge-reasoning-a"></div>
+              </div>
+              <div style="flex:1;min-width:240px">
+                <div style="font:700 10px 'Nunito';letter-spacing:0.08em;text-transform:uppercase;color:rgba(14,165,233,0.6);margin-bottom:6px" id="judge-model-b-label">Model B</div>
+                <div class="reasoning-text" id="judge-reasoning-b"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR METRICS CARD (shows after eval - radar bars) -->
+    <div class="panel-card" id="metrics-card" style="display:none">
+      <div class="panel-card-header">
+        <div class="panel-card-title">
+          <div class="title-icon">◉</div>
+          Dimension Scores
+        </div>
+      </div>
       <div class="scores-card-body">
-        <div class="scores-grid">
-
-          <!-- Faithfulness -->
-          <div class="score-metric">
-            <div class="score-metric-bar">
-              <div class="score-bar-track">
-                <div class="score-bar-inner" id="bar-faithfulness" style="height:4px"></div>
-              </div>
-            </div>
-            <div class="score-value placeholder" id="val-faithfulness">—</div>
-            <div class="score-name"><span class="score-subdot"></span>Faithfulness</div>
-          </div>
-
-          <!-- Relevance -->
-          <div class="score-metric">
-            <div class="score-metric-bar">
-              <div class="score-bar-track">
-                <div class="score-bar-inner" id="bar-relevance" style="height:4px"></div>
-              </div>
-            </div>
-            <div class="score-value placeholder" id="val-relevance">—</div>
-            <div class="score-name"><span class="score-subdot"></span>Relevance</div>
-          </div>
-
-          <!-- Coherence -->
-          <div class="score-metric">
-            <div class="score-metric-bar">
-              <div class="score-bar-track">
-                <div class="score-bar-inner" id="bar-coherence" style="height:4px"></div>
-              </div>
-            </div>
-            <div class="score-value placeholder" id="val-coherence">—</div>
-            <div class="score-name"><span class="score-subdot"></span>Coherence</div>
-          </div>
-
-          <!-- Completeness -->
-          <div class="score-metric">
-            <div class="score-metric-bar">
-              <div class="score-bar-track">
-                <div class="score-bar-inner" id="bar-completeness" style="height:4px"></div>
-              </div>
-            </div>
-            <div class="score-value placeholder" id="val-completeness">—</div>
-            <div class="score-name"><span class="score-subdot"></span>Completeness</div>
-          </div>
-
-        </div>
-
-        <!-- Overall -->
-        <div class="overall-score">
-          <div>
-            <div class="overall-score-label">Overall Score</div>
-            <div class="overall-score-sub" id="overall-sub">Awaiting evaluation</div>
-          </div>
-          <div class="val placeholder" id="val-overall">—</div>
-        </div>
+        <div class="scores-grid" id="dim-scores-grid"></div>
       </div>
     </div>
 
-    <!-- ── REASONING CARD ─────────────────────────────────────── -->
-    <div class="panel-card" id="reasoning-card">
+    <!-- LEADERBOARD CARD -->
+    <div class="panel-card" id="leaderboard-card">
       <div class="panel-card-header">
         <div class="panel-card-title">
-          <div class="title-icon">⊡</div>
-          Judge Reasoning
+          <div class="title-icon">🏆</div>
+          Global Leaderboard
         </div>
-        <span style="font:600 11px 'Nunito';color:rgba(155,135,212,0.4);letter-spacing:0.05em;text-transform:uppercase;font-size:10px">LLM-as-a-Judge</span>
+        <button class="adv-toggle-btn" onclick="loadLeaderboard()">Refresh</button>
       </div>
-      <div class="reasoning-body">
-        <div class="reasoning-label">Faithfulness</div>
-        <div class="reasoning-text reasoning-empty" id="reasoning-faithfulness">Submit an evaluation to see the judge's reasoning…</div>
-
-        <div class="reasoning-label" style="margin-top:14px">Relevance</div>
-        <div class="reasoning-text reasoning-empty" id="reasoning-relevance">—</div>
-
-        <div class="reasoning-label" style="margin-top:14px">Coherence</div>
-        <div class="reasoning-text reasoning-empty" id="reasoning-coherence">—</div>
-
-        <div class="reasoning-label" style="margin-top:14px">Completeness</div>
-        <div class="reasoning-text reasoning-empty" id="reasoning-completeness">—</div>
-      </div>
-    </div>
-
-    <!-- ── ADVERSARIAL TESTS CARD ─────────────────────────────── -->
-    <div class="panel-card" id="adv-card">
-      <div class="panel-card-header">
-        <div class="panel-card-title">
-          <div class="title-icon">⚡</div>
-          Adversarial Tests
-        </div>
-        <button class="adv-toggle-btn" id="adv-collapse-btn" onclick="toggleAdvTable()">Collapse</button>
-      </div>
-      <div id="adv-table-container">
-        <div class="adv-empty" id="adv-empty">
-          Run an evaluation with "Adversarial Tests" enabled to see results here.
-        </div>
-        <div class="adv-table-wrap" id="adv-table-wrap" style="display:none">
+      <div class="leaderboard-body">
+        <div class="adv-empty" id="leaderboard-empty">Loading leaderboard…</div>
+        <div class="adv-table-wrap" id="leaderboard-table-wrap" style="display:none">
           <table class="adv-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Perturbation</th>
-                <th>Modified Input</th>
-                <th>Faithfulness</th>
-                <th>Relevance</th>
-                <th>Coherence</th>
-                <th>Completeness</th>
-                <th>Overall</th>
+                <th>Rank</th>
+                <th>Model</th>
+                <th>Avg Score</th>
+                <th>Runs</th>
+                <th>Best Rubric</th>
+                <th>Worst Rubric</th>
               </tr>
             </thead>
-            <tbody id="adv-table-body"></tbody>
+            <tbody id="leaderboard-body"></tbody>
           </table>
         </div>
       </div>
@@ -1048,429 +1365,15 @@ body {
 // ===================================================================
 // STATE
 // ===================================================================
-let currentTab = 'question';
-let advTableVisible = true;
-let lastScores = null;
+const KNOWN_MODELS = ['gpt-4o','gpt-4o-mini','gpt-3.5-turbo','claude-3-5-sonnet','claude-3-haiku','gemini-1.5-pro','gemini-1.5-flash'];
+const RADAR_DIMS = ['Accuracy','Coherence','Factuality','Safety','Tool Use','Reasoning'];
+const RADAR_SB_KEYS = { 'Accuracy':'accuracy', 'Coherence':'coherence', 'Factuality':'factuality', 'Safety':'safety', 'Tool Use':'tooluse', 'Reasoning':'reasoning' };
 
-// In-memory tab values (persisted across tab switches)
-const tabValues = {
-  question: '',
-  answer: '',
-  context: ''
-};
-
-// ===================================================================
-// HISTORY (localStorage)
-// ===================================================================
-const HISTORY_KEY = 'llm_eval_history';
-const MAX_HISTORY = 5;
-
-function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-  } catch(_) { return []; }
-}
-
-function saveHistory() { /* called after push */ }
-
-function addToHistory(entry) {
-  let history = getHistory();
-  history.unshift(entry);
-  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  renderHistory();
-}
-
-function clearHistory() {
-  localStorage.removeItem(HISTORY_KEY);
-  renderHistory();
-}
-
-function renderHistory() {
-  const list = document.getElementById('history-list');
-  const history = getHistory();
-  if (!history.length) {
-    list.innerHTML = '<div style="font:400 11px \'JetBrains Mono\';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">No history yet</div>';
-    return;
-  }
-  list.innerHTML = history.map((h, i) => `
-    <div class="history-item" onclick="loadHistoryEntry(${i})">
-      <span class="icon">📄</span>
-      <span class="history-item-label">${escHtml(h.id)}</span>
-      <span class="history-item-score">${h.overall !== undefined ? h.overall.toFixed(1) : '—'}</span>
-    </div>
-  `).join('');
-}
-
-function loadHistoryEntry(index) {
-  const history = getHistory();
-  const entry = history[index];
-  if (!entry) return;
-
-  // Restore inputs
-  tabValues.question = entry.question || '';
-  tabValues.answer   = entry.answer   || '';
-  tabValues.context  = entry.context  || '';
-
-  document.getElementById('input-question').value = tabValues.question;
-  document.getElementById('input-answer').value   = tabValues.answer;
-  document.getElementById('input-context').value  = tabValues.context;
-
-  // Restore scores if saved
-  if (entry.scores) {
-    renderScores(entry.scores);
-  }
-  if (entry.adversarial) {
-    renderAdversarialTable(entry.adversarial);
-  }
-
-  switchTab('question');
-  toast('Loaded: ' + entry.id, 'info');
-}
-
-// ===================================================================
-// TAB SWITCHING
-// ===================================================================
-function switchTab(tab) {
-  // Save current tab's value
-  const currentTextarea = document.querySelector('.eval-textarea.active-tab');
-  if (currentTextarea) {
-    tabValues[currentTab] = currentTextarea.value;
-  }
-
-  currentTab = tab;
-
-  // Update tab classes
-  document.querySelectorAll('.eval-tab').forEach(t => {
-    t.classList.toggle('active', t.dataset.tab === tab);
-  });
-
-  // Show/hide textareas
-  document.querySelectorAll('.eval-textarea').forEach(ta => {
-    ta.classList.toggle('active-tab', ta.dataset.tab === tab);
-    if (ta.dataset.tab === tab) {
-      ta.value = tabValues[tab];
-      ta.focus();
-    }
-  });
-}
-
-// ===================================================================
-// CLEAR FORM
-// ===================================================================
-function clearForm() {
-  tabValues.question = '';
-  tabValues.answer   = '';
-  tabValues.context  = '';
-  document.getElementById('input-question').value = '';
-  document.getElementById('input-answer').value   = '';
-  document.getElementById('input-context').value  = '';
-  switchTab('question');
-
-  // Reset scores
-  setStatusReady();
-  resetScoreDisplay();
-  document.getElementById('adv-empty').style.display = '';
-  document.getElementById('adv-table-wrap').style.display = 'none';
-  document.getElementById('adv-table-body').innerHTML = '';
-  document.getElementById('scores-timestamp').textContent = '';
-}
-
-function resetScoreDisplay() {
-  ['faithfulness','relevance','coherence','completeness'].forEach(m => {
-    const bar = document.getElementById('bar-' + m);
-    const val = document.getElementById('val-' + m);
-    if (bar) bar.style.height = '4px';
-    if (val) { val.textContent = '—'; val.classList.add('placeholder'); }
-    document.getElementById('sb-' + m.substring(0,5) + '-score') &&
-      (document.getElementById('sb-' + m.substring(0,5) + '-score').textContent = '—');
-  });
-  document.getElementById('val-overall').textContent = '—';
-  document.getElementById('val-overall').classList.add('placeholder');
-  document.getElementById('overall-sub').textContent = 'Awaiting evaluation';
-
-  // Reset sidebar badges
-  ['faith','relev','coher','comp'].forEach(k => {
-    const el = document.getElementById('sb-' + k + '-score');
-    if (el) el.textContent = '—';
-  });
-
-  // Reset reasoning
-  ['faithfulness','relevance','coherence','completeness'].forEach(m => {
-    const el = document.getElementById('reasoning-' + m);
-    if (el) {
-      el.textContent = m === 'faithfulness'
-        ? 'Submit an evaluation to see the judge\'s reasoning…'
-        : '—';
-      el.classList.add('reasoning-empty');
-    }
-  });
-}
-
-// ===================================================================
-// STATUS HELPERS
-// ===================================================================
-function setStatusLoading(msg) {
-  document.getElementById('status-dot').className = 'status-dot loading';
-  document.getElementById('status-text').textContent = msg || 'Evaluating…';
-  document.getElementById('title-status').textContent = 'Evaluating…';
-}
-
-function setStatusReady() {
-  document.getElementById('status-dot').className = 'status-dot';
-  document.getElementById('status-text').textContent = 'Ready';
-  document.getElementById('title-status').textContent = 'Ready';
-}
-
-function setStatusError() {
-  document.getElementById('status-dot').className = 'status-dot error';
-  document.getElementById('status-text').textContent = 'Error';
-  document.getElementById('title-status').textContent = 'Error';
-}
-
-// ===================================================================
-// SCROLL TO SCORES
-// ===================================================================
-function scrollToScores() {
-  document.getElementById('scores-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-// ===================================================================
-// SUBMIT EVALUATION
-// ===================================================================
-async function submitEval() {
-  // Sync current textarea value before reading
-  const activeTA = document.querySelector('.eval-textarea.active-tab');
-  if (activeTA) tabValues[currentTab] = activeTA.value;
-
-  const question   = tabValues.question.trim();
-  const answer     = tabValues.answer.trim();
-  const context    = tabValues.context.trim();
-  const runAdv     = document.getElementById('adv-toggle').checked;
-
-  if (!question) { toast('Please enter a Question.', 'error'); switchTab('question'); return; }
-  if (!answer)   { toast('Please enter an Answer.', 'error');   switchTab('answer');   return; }
-
-  setStatusLoading('Evaluating…');
-  setButtonsDisabled(true);
-
-  try {
-    const res = await fetch('/api/evaluate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, answer, context, run_adversarial: runAdv }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: 'Server error ' + res.status }));
-      throw new Error(err.error || 'Server error ' + res.status);
-    }
-
-    const data = await res.json();
-    lastScores = data;
-
-    renderScores(data);
-    renderReasoning(data);
-
-    if (runAdv && data.adversarial_results) {
-      renderAdversarialTable(data.adversarial_results);
-    }
-
-    // Persist to history
-    const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const evalId = 'eval_' + Date.now().toString(36);
-    addToHistory({
-      id: evalId,
-      ts,
-      question,
-      answer,
-      context,
-      overall: data.overall_score || calcOverall(data),
-      scores: data,
-      adversarial: (runAdv && data.adversarial_results) ? data.adversarial_results : null,
-    });
-
-    document.getElementById('scores-timestamp').textContent = ts;
-    setStatusReady();
-    toast('Evaluation complete!', 'success');
-
-  } catch (e) {
-    setStatusError();
-    toast('Evaluation failed: ' + e.message, 'error');
-    console.error(e);
-  } finally {
-    setButtonsDisabled(false);
-  }
-}
-
-function calcOverall(data) {
-  const scores = [
-    data.faithfulness_score,
-    data.relevance_score,
-    data.coherence_score,
-    data.completeness_score,
-  ].filter(s => typeof s === 'number');
-  if (!scores.length) return 0;
-  return scores.reduce((a,b) => a+b, 0) / scores.length;
-}
-
-function setButtonsDisabled(disabled) {
-  document.getElementById('run-eval-btn').disabled = disabled;
-  document.getElementById('run-btn-sidebar').disabled = disabled;
-
-  if (disabled) {
-    document.getElementById('run-eval-btn').innerHTML =
-      '<span class="spinner"></span> Evaluating…';
-    document.getElementById('run-btn-sidebar').innerHTML =
-      '<span class="spinner"></span> Evaluating…';
-  } else {
-    document.getElementById('run-eval-btn').innerHTML =
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
-    document.getElementById('run-btn-sidebar').innerHTML =
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Run Evaluation';
-  }
-}
-
-// ===================================================================
-// RENDER SCORES
-// ===================================================================
-function renderScores(data) {
-  const metrics = {
-    faithfulness:  data.faithfulness_score,
-    relevance:     data.relevance_score,
-    coherence:     data.coherence_score,
-    completeness:  data.completeness_score,
-  };
-
-  const sidebarKeys = {
-    faithfulness:  'faith',
-    relevance:     'relev',
-    coherence:     'coher',
-    completeness:  'comp',
-  };
-
-  for (const [metric, score] of Object.entries(metrics)) {
-    const numScore = typeof score === 'number' ? score : 0;
-
-    // Bar height: score/10 * 80px
-    const barH = Math.max(4, Math.round((numScore / 10) * 80));
-    const barEl = document.getElementById('bar-' + metric);
-    if (barEl) barEl.style.height = barH + 'px';
-
-    // Value
-    const valEl = document.getElementById('val-' + metric);
-    if (valEl) {
-      valEl.textContent = numScore.toFixed(1);
-      valEl.classList.remove('placeholder');
-    }
-
-    // Sidebar badge
-    const sbKey = sidebarKeys[metric];
-    const sbEl = document.getElementById('sb-' + sbKey + '-score');
-    if (sbEl) sbEl.textContent = numScore.toFixed(1);
-  }
-
-  // Overall
-  const overall = typeof data.overall_score === 'number'
-    ? data.overall_score
-    : calcOverall(data);
-
-  const overallEl = document.getElementById('val-overall');
-  if (overallEl) {
-    overallEl.textContent = overall.toFixed(1) + '/10';
-    overallEl.classList.remove('placeholder');
-  }
-
-  const overallSub = document.getElementById('overall-sub');
-  if (overallSub) {
-    const label = overall >= 8 ? 'Excellent' : overall >= 6 ? 'Good' : overall >= 4 ? 'Fair' : 'Poor';
-    overallSub.textContent = label + ' — ' + (data.model || 'LLM-as-a-Judge');
-  }
-}
-
-// ===================================================================
-// RENDER REASONING
-// ===================================================================
-function renderReasoning(data) {
-  const reasonings = {
-    faithfulness:  data.faithfulness_reasoning  || data.reasoning?.faithfulness,
-    relevance:     data.relevance_reasoning      || data.reasoning?.relevance,
-    coherence:     data.coherence_reasoning      || data.reasoning?.coherence,
-    completeness:  data.completeness_reasoning   || data.reasoning?.completeness,
-  };
-
-  for (const [metric, text] of Object.entries(reasonings)) {
-    const el = document.getElementById('reasoning-' + metric);
-    if (el) {
-      if (text) {
-        el.textContent = text;
-        el.classList.remove('reasoning-empty');
-      } else {
-        el.textContent = 'No reasoning provided for this metric.';
-        el.classList.add('reasoning-empty');
-      }
-    }
-  }
-}
-
-// ===================================================================
-// RENDER ADVERSARIAL TABLE
-// ===================================================================
-function renderAdversarialTable(results) {
-  const tbody = document.getElementById('adv-table-body');
-  const empty = document.getElementById('adv-empty');
-  const wrap  = document.getElementById('adv-table-wrap');
-
-  if (!results || !results.length) {
-    empty.style.display = '';
-    wrap.style.display = 'none';
-    return;
-  }
-
-  empty.style.display = 'none';
-  wrap.style.display = '';
-
-  tbody.innerHTML = results.map((row, i) => {
-    const overall = typeof row.overall_score === 'number' ? row.overall_score : (
-      [row.faithfulness_score, row.relevance_score, row.coherence_score, row.completeness_score]
-        .filter(s => typeof s === 'number')
-        .reduce((a,b,_,arr) => a + b/arr.length, 0)
-    );
-    const badgeClass = overall >= 7 ? 'high' : overall >= 4.5 ? 'mid' : 'low';
-
-    const scoreCell = (s) => {
-      const n = typeof s === 'number' ? s : 0;
-      const cls = n >= 7 ? 'high' : n >= 4.5 ? 'mid' : 'low';
-      return `<span class="score-badge ${cls}">${n.toFixed(1)}</span>`;
-    };
-
-    const perturbation = escHtml(row.perturbation_type || row.type || ('Test ' + (i+1)));
-    const modified = escHtml((row.modified_question || row.input || '').substring(0, 80)) +
-      ((row.modified_question || row.input || '').length > 80 ? '…' : '');
-
-    return `<tr>
-      <td style="font:600 12px 'JetBrains Mono';color:rgba(155,135,212,0.5)">${i+1}</td>
-      <td style="font:700 12.5px 'Nunito';color:var(--accent-end)">${perturbation}</td>
-      <td style="font:400 12px 'JetBrains Mono';color:rgba(240,238,255,0.5);max-width:200px">${modified}</td>
-      <td>${scoreCell(row.faithfulness_score)}</td>
-      <td>${scoreCell(row.relevance_score)}</td>
-      <td>${scoreCell(row.coherence_score)}</td>
-      <td>${scoreCell(row.completeness_score)}</td>
-      <td><span class="score-badge ${badgeClass}">${overall.toFixed(1)}</span></td>
-    </tr>`;
-  }).join('');
-}
-
-// ===================================================================
-// TOGGLE ADVERSARIAL TABLE
-// ===================================================================
-function toggleAdvTable() {
-  advTableVisible = !advTableVisible;
-  const container = document.getElementById('adv-table-container');
-  const btn = document.getElementById('adv-collapse-btn');
-  container.style.display = advTableVisible ? '' : 'none';
-  btn.textContent = advTableVisible ? 'Collapse' : 'Expand';
-}
+let allScenarios = [];            // [{id, category, prompt, rubrics, max_score, ...}]
+let selectedScenarioIds = new Set(); // currently selected
+let lastResults = null;           // complete results object from SSE
+let liveScores = {};              // model -> running avg during streaming
+let runningScenarioCounts = {};   // model -> count of scored scenarios
 
 // ===================================================================
 // UTILITIES
@@ -1499,18 +1402,645 @@ function toast(message, type = 'info') {
   }, 4000);
 }
 
+function badgeClass(score) {
+  return score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low';
+}
+
+function barBlocks(pct, total = 10) {
+  const filled = Math.round((pct / 100) * total);
+  return '█'.repeat(filled) + '░'.repeat(Math.max(0, total - filled));
+}
+
+// ===================================================================
+// STATUS HELPERS
+// ===================================================================
+function setStatusLoading(msg) {
+  document.getElementById('status-dot').className = 'status-dot loading';
+  document.getElementById('status-text').textContent = msg || 'Running…';
+  document.getElementById('title-status').textContent = msg || 'Running…';
+}
+
+function setStatusReady() {
+  document.getElementById('status-dot').className = 'status-dot';
+  document.getElementById('status-text').textContent = 'Ready';
+  document.getElementById('title-status').textContent = 'Ready';
+}
+
+function setStatusError() {
+  document.getElementById('status-dot').className = 'status-dot error';
+  document.getElementById('status-text').textContent = 'Error';
+  document.getElementById('title-status').textContent = 'Error';
+}
+
+// ===================================================================
+// MODEL SELECTION
+// ===================================================================
+function handleModelSelectChange(which) {
+  const sel = document.getElementById(`model-${which}-select`);
+  const custom = document.getElementById(`model-${which}-custom`);
+  if (sel.value === '__custom__') {
+    sel.style.display = 'none';
+    custom.style.display = 'block';
+    custom.focus();
+  }
+}
+
+function toggleCustomModel(which) {
+  const sel = document.getElementById(`model-${which}-select`);
+  const custom = document.getElementById(`model-${which}-custom`);
+  const btn = document.getElementById(`model-${which}-toggle`);
+  if (custom.style.display === 'none' || !custom.style.display) {
+    sel.style.display = 'none';
+    custom.style.display = 'block';
+    btn.textContent = 'List';
+    custom.focus();
+  } else {
+    sel.style.display = '';
+    custom.style.display = 'none';
+    btn.textContent = 'Custom';
+    sel.value = 'gpt-4o'; // reset to a valid option
+  }
+}
+
+function getSelectedModel(which) {
+  const sel = document.getElementById(`model-${which}-select`);
+  const custom = document.getElementById(`model-${which}-custom`);
+  if (custom.style.display === 'block') {
+    return custom.value.trim();
+  }
+  return sel.value === '__custom__' ? custom.value.trim() : sel.value;
+}
+
+// ===================================================================
+// SCENARIOS
+// ===================================================================
+async function loadScenarios() {
+  try {
+    const res = await fetch('/api/scenarios');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    allScenarios = data.scenarios || [];
+    selectedScenarioIds = new Set(allScenarios.map(s => s.id));
+    renderSidebarScenarios();
+    updateScenarioCountLabel();
+  } catch(e) {
+    document.getElementById('scenario-list').innerHTML =
+      `<div style="font:400 11px 'JetBrains Mono';color:rgba(248,113,113,0.6);padding:4px 8px;font-style:italic">Could not load scenarios</div>`;
+    console.warn('loadScenarios failed:', e);
+  }
+}
+
+function renderSidebarScenarios() {
+  const list = document.getElementById('scenario-list');
+  if (!allScenarios.length) {
+    list.innerHTML = '<div style="font:400 11px \'JetBrains Mono\';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">No scenarios</div>';
+    return;
+  }
+
+  // Group by category
+  const groups = {};
+  for (const s of allScenarios) {
+    const cat = s.category || 'General';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(s);
+  }
+
+  let html = '';
+  for (const [cat, scenarios] of Object.entries(groups)) {
+    html += `<div class="scenario-category-label">${escHtml(cat)}</div>`;
+    for (const s of scenarios) {
+      const sel = selectedScenarioIds.has(s.id);
+      html += `<div class="scenario-sidebar-item ${sel ? 'selected' : ''}" onclick="toggleScenario(${escHtml(JSON.stringify(s.id))})" data-scenario-id="${escHtml(s.id)}">
+        <div class="chk"></div>
+        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(s.id)}</span>
+      </div>`;
+    }
+  }
+  list.innerHTML = html;
+}
+
+function toggleScenario(id) {
+  if (selectedScenarioIds.has(id)) {
+    selectedScenarioIds.delete(id);
+  } else {
+    selectedScenarioIds.add(id);
+  }
+  // Update sidebar item
+  const el = document.querySelector(`.scenario-sidebar-item[data-scenario-id="${CSS.escape(id)}"]`);
+  if (el) el.classList.toggle('selected', selectedScenarioIds.has(id));
+  updateScenarioCountLabel();
+}
+
+function selectAllScenarios() {
+  selectedScenarioIds = new Set(allScenarios.map(s => s.id));
+  renderSidebarScenarios();
+  updateScenarioCountLabel();
+}
+
+function clearAllScenarios() {
+  selectedScenarioIds.clear();
+  renderSidebarScenarios();
+  updateScenarioCountLabel();
+}
+
+function updateScenarioCountLabel() {
+  const total = allScenarios.length;
+  const sel = selectedScenarioIds.size;
+  const label = document.getElementById('selected-count-label');
+  if (!label) return;
+  if (sel === 0) {
+    label.textContent = 'none selected';
+  } else if (sel === total) {
+    label.textContent = `${total} selected (all)`;
+  } else {
+    label.textContent = `${sel} of ${total} selected`;
+  }
+}
+
+// ===================================================================
+// HISTORY (localStorage)
+// ===================================================================
+const HISTORY_KEY = 'llm_eval_harness_history_v2';
+const MAX_HISTORY = 3;
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch(_) { return []; }
+}
+
+function addToHistory(entry) {
+  let history = getHistory();
+  history.unshift(entry);
+  if (history.length > MAX_HISTORY) history = history.slice(0, MAX_HISTORY);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  renderHistory();
+}
+
+function clearHistory() {
+  localStorage.removeItem(HISTORY_KEY);
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  const history = getHistory();
+  if (!history.length) {
+    list.innerHTML = '<div style="font:400 11px \'JetBrains Mono\';color:rgba(155,135,212,0.3);padding:4px 8px;font-style:italic">No history yet</div>';
+    return;
+  }
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistoryEntry(${i})">
+      <span class="icon">📄</span>
+      <span class="history-item-label">${escHtml(h.modelA)} vs ${escHtml(h.modelB)}</span>
+      <span class="history-item-score">${h.overallA ? h.overallA.toFixed(1) : '—'}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistoryEntry(index) {
+  const history = getHistory();
+  const entry = history[index];
+  if (!entry || !entry.results) return;
+  lastResults = entry.results;
+  renderResults(lastResults);
+  toast('Loaded history entry', 'info');
+}
+
+// ===================================================================
+// BUTTONS DISABLED STATE
+// ===================================================================
+function setButtonsDisabled(disabled) {
+  const runBtn = document.getElementById('run-eval-btn');
+  const sideBtn = document.getElementById('run-btn-sidebar');
+  runBtn.disabled = disabled;
+  sideBtn.disabled = disabled;
+
+  const icon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  if (disabled) {
+    runBtn.innerHTML = '<span class="spinner"></span> Running…';
+    sideBtn.innerHTML = '<span class="spinner"></span> Running…';
+  } else {
+    runBtn.innerHTML = icon + ' Run Evaluation';
+    sideBtn.innerHTML = icon + ' Run Evaluation';
+  }
+}
+
+// ===================================================================
+// RUN EVALUATION (SSE via fetch)
+// ===================================================================
+async function runEvaluation() {
+  const modelA = getSelectedModel('a');
+  const modelB = getSelectedModel('b');
+
+  if (!modelA) { toast('Please specify Model A.', 'error'); return; }
+  if (!modelB) { toast('Please specify Model B.', 'error'); return; }
+  if (modelA === modelB) { toast('Model A and Model B must be different.', 'error'); return; }
+  if (selectedScenarioIds.size === 0) { toast('Please select at least one scenario.', 'error'); return; }
+
+  setStatusLoading('Running evaluation…');
+  setButtonsDisabled(true);
+
+  // Show progress card, hide results
+  document.getElementById('progress-card').style.display = '';
+  document.getElementById('results-card').style.display = 'none';
+  document.getElementById('metrics-card').style.display = 'none';
+
+  // Scroll progress card into view
+  document.getElementById('progress-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Reset live scores
+  liveScores = { [modelA]: null, [modelB]: null };
+  runningScenarioCounts = { [modelA]: 0, [modelB]: 0 };
+
+  document.getElementById('live-model-a-name').textContent = modelA;
+  document.getElementById('live-model-b-name').textContent = modelB;
+  document.getElementById('live-score-a').textContent = '—';
+  document.getElementById('live-score-a').className = 'live-score-val placeholder';
+  document.getElementById('live-score-b').textContent = '—';
+  document.getElementById('live-score-b').className = 'live-score-val placeholder';
+
+  const scenarioIds = [...selectedScenarioIds];
+  const totalScenarioRuns = scenarioIds.length * 2; // both models
+  let completedRuns = 0;
+
+  try {
+    const resp = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ models: [modelA, modelB], scenario_ids: scenarioIds }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: 'Server error ' + resp.status }));
+      throw new Error(err.error || 'Server error ' + resp.status);
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let evt;
+        try { evt = JSON.parse(line.slice(6)); } catch(_) { continue; }
+
+        if (evt.event === 'progress') {
+          completedRuns++;
+          const model = evt.model;
+          const pct = evt.pct || Math.round((completedRuns / totalScenarioRuns) * 100);
+
+          // Update live score
+          if (model in liveScores) {
+            runningScenarioCounts[model] = (runningScenarioCounts[model] || 0) + 1;
+            const prev = liveScores[model] || 0;
+            const cnt = runningScenarioCounts[model];
+            liveScores[model] = (prev * (cnt - 1) + evt.score) / cnt;
+          }
+
+          // Update progress bar
+          const totalPct = Math.min(pct, 99);
+          document.getElementById('progress-fill').style.width = totalPct + '%';
+          document.getElementById('progress-pct').textContent = totalPct + '%';
+          document.getElementById('progress-label').textContent =
+            `Running scenario ${completedRuns}/${totalScenarioRuns}`;
+          document.getElementById('progress-detail').textContent =
+            `${escHtml(model)} · ${escHtml(evt.scenario)} · score: ${typeof evt.score === 'number' ? evt.score.toFixed(1) : '—'}`;
+
+          // Update live score tickers
+          const isA = model === modelA;
+          const scoreEl = document.getElementById(isA ? 'live-score-a' : 'live-score-b');
+          const scoreVal = liveScores[model];
+          if (scoreEl && scoreVal !== null) {
+            scoreEl.textContent = scoreVal.toFixed(1);
+            scoreEl.className = 'live-score-val';
+          }
+
+        } else if (evt.event === 'complete') {
+          // Done!
+          document.getElementById('progress-fill').style.width = '100%';
+          document.getElementById('progress-pct').textContent = '100%';
+          document.getElementById('progress-label').textContent = 'Evaluation complete';
+          document.getElementById('progress-detail').textContent = 'Processing results…';
+
+          lastResults = evt.results;
+          renderResults(lastResults);
+
+          // History
+          const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          document.getElementById('scores-timestamp').textContent = ts;
+          document.getElementById('results-timestamp').textContent = ts;
+
+          const ra = lastResults[modelA];
+          const rb = lastResults[modelB];
+          addToHistory({
+            modelA, modelB,
+            overallA: ra ? ra.overall : null,
+            overallB: rb ? rb.overall : null,
+            ts,
+            results: lastResults,
+          });
+
+          await loadLeaderboard();
+          setStatusReady();
+          toast('Evaluation complete!', 'success');
+        }
+      }
+    }
+
+  } catch(e) {
+    setStatusError();
+    toast('Evaluation failed: ' + e.message, 'error');
+    document.getElementById('progress-detail').textContent = 'Error: ' + e.message;
+    console.error(e);
+  } finally {
+    setButtonsDisabled(false);
+  }
+}
+
+// ===================================================================
+// RENDER RESULTS
+// ===================================================================
+function renderResults(results) {
+  if (!results) return;
+
+  const models = Object.keys(results);
+  if (!models.length) return;
+
+  const modelA = models[0];
+  const modelB = models[1] || null;
+  const ra = results[modelA];
+  const rb = modelB ? results[modelB] : null;
+
+  // Show cards
+  document.getElementById('results-card').style.display = '';
+  document.getElementById('metrics-card').style.display = '';
+
+  // Update table headers
+  document.getElementById('th-model-a').textContent = modelA;
+  if (modelB) document.getElementById('th-model-b').textContent = modelB;
+
+  // ---- Overview bars ----
+  const overviewEl = document.getElementById('results-overview');
+  let overviewHtml = '';
+
+  const overallA = ra ? ra.overall : 0;
+  const overallB = rb ? rb.overall : 0;
+
+  if (ra) {
+    overviewHtml += renderModelBar(modelA, overallA, false);
+  }
+  if (rb) {
+    overviewHtml += renderModelBar(modelB, overallB, true);
+  }
+
+  // Winner banner
+  if (ra && rb) {
+    const diff = Math.abs(overallA - overallB).toFixed(1);
+    if (parseFloat(diff) < 0.5) {
+      overviewHtml += `<div class="winner-banner tie">= Tie — scores within 0.5 pts</div>`;
+    } else {
+      const winner = overallA >= overallB ? modelA : modelB;
+      overviewHtml += `<div class="winner-banner">Winner: ${escHtml(winner)} (+${diff} pts)</div>`;
+    }
+  }
+
+  overviewEl.innerHTML = overviewHtml;
+
+  // ---- Radar rows ----
+  const radarEl = document.getElementById('radar-rows');
+  let radarHtml = '';
+  for (const dim of RADAR_DIMS) {
+    const aVal = ra && ra.radar ? (ra.radar[dim] || 0) : 0;
+    const bVal = rb && rb.radar ? (rb.radar[dim] || 0) : null;
+    radarHtml += renderRadarRow(dim, aVal, bVal, modelA, modelB);
+  }
+  radarEl.innerHTML = radarHtml;
+
+  // Update sidebar metric badges
+  if (ra && ra.radar) {
+    for (const [dim, key] of Object.entries(RADAR_SB_KEYS)) {
+      const val = ra.radar[dim];
+      const el = document.getElementById(`sb-${key}-score`);
+      if (el) el.textContent = typeof val === 'number' ? val.toFixed(1) : '—';
+    }
+  }
+
+  // ---- Dimension score bars (metrics card) ----
+  const dimGrid = document.getElementById('dim-scores-grid');
+  let dimHtml = '';
+  for (const dim of RADAR_DIMS) {
+    const aVal = ra && ra.radar ? (ra.radar[dim] || 0) : 0;
+    const barH = Math.max(4, Math.round((aVal / 10) * 80));
+    dimHtml += `<div class="score-metric">
+      <div class="score-metric-bar">
+        <div class="score-bar-track">
+          <div class="score-bar-inner" style="height:${barH}px"></div>
+        </div>
+      </div>
+      <div class="score-value">${aVal.toFixed(1)}</div>
+      <div class="score-name"><span class="score-subdot"></span>${escHtml(dim)}</div>
+    </div>`;
+  }
+  dimGrid.innerHTML = dimHtml;
+
+  // ---- Scenario breakdown table ----
+  const tbody = document.getElementById('scenario-table-body');
+  let tableHtml = '';
+
+  // Merge scenario lists from both models
+  const scenariosA = (ra && ra.scenarios) ? ra.scenarios : [];
+  const scenariosB = (rb && rb.scenarios) ? rb.scenarios : [];
+
+  // Build a map by scenario_id from model B
+  const bMap = {};
+  for (const s of scenariosB) bMap[s.scenario_id] = s;
+
+  for (const sA of scenariosA) {
+    const sB = bMap[sA.scenario_id];
+    const scoreA = typeof sA.score_pct === 'number' ? sA.score_pct : (sA.weighted_total * 10);
+    const scoreB = sB ? (typeof sB.score_pct === 'number' ? sB.score_pct : (sB.weighted_total * 10)) : null;
+    const delta = scoreB !== null ? (scoreA - scoreB) : null;
+    const deltaStr = delta !== null
+      ? `<span class="score-badge ${delta >= 0 ? 'pos' : 'neg'}">${delta >= 0 ? '+' : ''}${delta.toFixed(1)}</span>`
+      : '—';
+
+    const cat = sA.category || '';
+    const catShort = cat.toUpperCase().substring(0, 6);
+
+    tableHtml += `<tr onclick="showJudgeReasoning(${escHtml(JSON.stringify(sA.scenario_id))})">
+      <td style="font:400 11.5px 'JetBrains Mono';color:rgba(155,135,212,0.7)">${escHtml(sA.scenario_id)}</td>
+      <td><span style="font:700 10px 'Nunito';letter-spacing:0.05em;color:var(--muted)">${escHtml(catShort)}</span></td>
+      <td><span class="score-badge ${badgeClass(scoreA)}">${scoreA.toFixed(1)}</span></td>
+      <td>${scoreB !== null ? `<span class="score-badge ${badgeClass(scoreB)}">${scoreB.toFixed(1)}</span>` : '—'}</td>
+      <td>${deltaStr}</td>
+    </tr>`;
+  }
+
+  tbody.innerHTML = tableHtml || '<tr><td colspan="5" class="adv-empty">No scenario data</td></tr>';
+
+  // Scroll results into view
+  setTimeout(() => {
+    document.getElementById('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function renderModelBar(model, overall, isB) {
+  const pct = Math.min(100, overall);
+  return `<div class="result-model-row">
+    <span class="result-model-name">${escHtml(model)}</span>
+    <span class="result-model-score">${overall.toFixed(1)} / 100</span>
+    <div class="result-model-bar-track">
+      <div class="result-model-bar-fill ${isB ? 'model-b' : ''}" style="width:${pct}%"></div>
+    </div>
+  </div>`;
+}
+
+function renderRadarRow(dim, aVal, bVal, modelA, modelB) {
+  const aPct = Math.round((aVal / 10) * 100);
+  const bPct = bVal !== null ? Math.round((bVal / 10) * 100) : null;
+
+  let html = `<div class="radar-row">
+    <span class="radar-dim-name">${escHtml(dim)}</span>
+    <div class="radar-bar-group">
+      <div class="radar-bar-line">
+        <div class="radar-bar-track"><div class="radar-bar-fill" style="width:${aPct}%"></div></div>
+        <span class="radar-score">${aVal.toFixed(1)}</span>
+        <span class="radar-model-tag">${escHtml(modelA)}</span>
+      </div>`;
+
+  if (bVal !== null) {
+    html += `<div class="radar-bar-line">
+        <div class="radar-bar-track"><div class="radar-bar-fill b" style="width:${bPct}%"></div></div>
+        <span class="radar-score">${bVal.toFixed(1)}</span>
+        <span class="radar-model-tag">${escHtml(modelB)}</span>
+      </div>`;
+  }
+
+  html += `</div></div>`;
+  return html;
+}
+
+// ===================================================================
+// JUDGE REASONING
+// ===================================================================
+function showJudgeReasoning(scenarioId) {
+  if (!lastResults) return;
+  const models = Object.keys(lastResults);
+  const modelA = models[0];
+  const modelB = models[1] || null;
+  const ra = lastResults[modelA];
+  const rb = modelB ? lastResults[modelB] : null;
+
+  const sA = ra && ra.scenarios ? ra.scenarios.find(s => s.scenario_id === scenarioId) : null;
+  const sB = rb && rb.scenarios ? rb.scenarios.find(s => s.scenario_id === scenarioId) : null;
+
+  const section = document.getElementById('judge-reasoning-section');
+  section.style.display = '';
+
+  document.getElementById('judge-scenario-label').textContent = scenarioId;
+  document.getElementById('judge-model-a-label').textContent = modelA;
+  document.getElementById('judge-model-b-label').textContent = modelB || 'Model B';
+
+  const reasonA = document.getElementById('judge-reasoning-a');
+  const reasonB = document.getElementById('judge-reasoning-b');
+
+  reasonA.textContent = (sA && sA.judge_reasoning) ? sA.judge_reasoning : 'No reasoning available.';
+  reasonA.className = 'reasoning-text' + ((sA && sA.judge_reasoning) ? '' : ' reasoning-empty');
+
+  reasonB.textContent = (sB && sB.judge_reasoning) ? sB.judge_reasoning : 'No reasoning available.';
+  reasonB.className = 'reasoning-text' + ((sB && sB.judge_reasoning) ? '' : ' reasoning-empty');
+
+  // Highlight selected row
+  document.querySelectorAll('#scenario-table-body tr').forEach(tr => tr.classList.remove('selected-row'));
+  const rows = document.querySelectorAll('#scenario-table-body tr');
+  rows.forEach(tr => {
+    if (tr.querySelector('td') && tr.querySelector('td').textContent === scenarioId) {
+      tr.classList.add('selected-row');
+    }
+  });
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ===================================================================
+// LEADERBOARD
+// ===================================================================
+async function loadLeaderboard() {
+  const empty = document.getElementById('leaderboard-empty');
+  const wrap = document.getElementById('leaderboard-table-wrap');
+  const tbody = document.getElementById('leaderboard-body');
+
+  try {
+    const res = await fetch('/api/leaderboard');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const entries = data.leaderboard || [];
+
+    if (!entries.length) {
+      empty.textContent = 'No leaderboard data yet. Run an evaluation first.';
+      empty.style.display = '';
+      wrap.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    wrap.style.display = '';
+
+    tbody.innerHTML = entries.map((e, i) => {
+      const score = typeof e.avg_weighted_total === 'number' ? e.avg_weighted_total : 0;
+      const cls = badgeClass(score);
+      return `<tr>
+        <td style="font:700 12px 'JetBrains Mono';color:var(--accent-end)">${i + 1}</td>
+        <td style="font:700 12.5px 'Nunito';color:var(--ink)">${escHtml(e.model)}</td>
+        <td><span class="score-badge ${cls}">${score.toFixed(1)}</span></td>
+        <td style="font:400 11.5px 'JetBrains Mono';color:rgba(155,135,212,0.6)">${e.runs_evaluated || '—'}</td>
+        <td style="font:400 11.5px 'Nunito';color:var(--green)">${escHtml(e.top_rubric || '—')}</td>
+        <td style="font:400 11.5px 'Nunito';color:var(--red)">${escHtml(e.worst_rubric || '—')}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    empty.textContent = 'Could not load leaderboard. Is the backend running?';
+    empty.style.display = '';
+    wrap.style.display = 'none';
+    console.warn('loadLeaderboard failed:', e);
+  }
+}
+
+// ===================================================================
+// HEALTH CHECK
+// ===================================================================
+async function checkHealth() {
+  try {
+    const res = await fetch('/api/health');
+    if (!res.ok) throw new Error('not ok');
+    const data = await res.json();
+    if (data.status === 'ok') {
+      setStatusReady();
+    }
+  } catch(e) {
+    document.getElementById('status-dot').className = 'status-dot error';
+    document.getElementById('status-text').textContent = 'Backend offline';
+    document.getElementById('title-status').textContent = 'Offline';
+    toast('Backend is offline. Start the server first.', 'error');
+  }
+}
+
 // ===================================================================
 // INIT
 // ===================================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   renderHistory();
-
-  // Keep tab values in sync on textarea input
-  document.querySelectorAll('.eval-textarea').forEach(ta => {
-    ta.addEventListener('input', () => {
-      tabValues[ta.dataset.tab] = ta.value;
-    });
-  });
+  await checkHealth();
+  await loadScenarios();
+  await loadLeaderboard();
 });
 </script>
 </body>
