@@ -612,3 +612,287 @@ async def generate_adversarial(scenario_id: str, n: int = 5, model: str = "model
         "original_score": original_result.weighted_total,
         "variants": variant_results,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /api/news  –  Top AI/LLM stories from Hacker News
+# ---------------------------------------------------------------------------
+
+@app.get("/api/news")
+async def get_ai_news():
+    """Fetch top AI/LLM news stories from Hacker News."""
+    import urllib.request
+    import json as _json
+
+    AI_KEYWORDS = [
+        "llm", "gpt", "claude", "gemini", "openai", "anthropic", "mistral",
+        "llama", "ai ", "artificial intelligence", "language model", "deepseek",
+        "benchmark", "frontier model", "inference", "transformer"
+    ]
+
+    def _fetch(url: str):
+        with urllib.request.urlopen(url, timeout=5) as r:
+            return _json.loads(r.read())
+
+    try:
+        # Get top story IDs
+        ids = await asyncio.get_event_loop().run_in_executor(
+            None, _fetch, "https://hacker-news.firebaseio.com/v0/topstories.json"
+        )
+
+        # Fetch first 80 stories concurrently
+        async def fetch_story(sid):
+            try:
+                return await asyncio.get_event_loop().run_in_executor(
+                    None, _fetch, f"https://hacker-news.firebaseio.com/v0/item/{sid}.json"
+                )
+            except Exception:
+                return None
+
+        tasks = [fetch_story(sid) for sid in ids[:80]]
+        stories = await asyncio.gather(*tasks)
+
+        # Filter for AI relevance
+        results = []
+        for s in stories:
+            if not s or s.get("type") != "story" or not s.get("title"):
+                continue
+            title_lower = s["title"].lower()
+            url = s.get("url", f"https://news.ycombinator.com/item?id={s['id']}")
+            if any(kw in title_lower for kw in AI_KEYWORDS):
+                results.append({
+                    "id": s["id"],
+                    "title": s["title"],
+                    "url": url,
+                    "score": s.get("score", 0),
+                    "comments": s.get("descendants", 0),
+                    "by": s.get("by", ""),
+                    "time": s.get("time", 0),
+                    "hn_url": f"https://news.ycombinator.com/item?id={s['id']}",
+                })
+            if len(results) >= 6:
+                break
+
+        return {"stories": results, "source": "Hacker News"}
+    except Exception as e:
+        return {
+            "stories": [],
+            "source": "unavailable",
+            "error": str(e)
+        }
+
+
+# ---------------------------------------------------------------------------
+# GET /api/models  –  Static specs and benchmark data for major LLMs
+# ---------------------------------------------------------------------------
+
+@app.get("/api/models")
+async def get_model_specs():
+    """Return static specs and benchmark data for major LLMs."""
+    models = [
+        {
+            "id": "gpt-4o",
+            "name": "GPT-4o",
+            "provider": "OpenAI",
+            "provider_color": "#10a37f",
+            "released": "May 2024",
+            "context_k": 128,
+            "params": "Unknown",
+            "strengths": ["Multimodal", "Coding", "Reasoning", "Speed"],
+            "mmlu": 88.7,
+            "humaneval": 90.2,
+            "math": 76.6,
+            "price_input": 2.50,
+            "price_output": 10.00,
+            "description": "OpenAI's flagship omni model. Matches GPT-4 Turbo on text/code while adding native audio and vision at 2x speed.",
+            "badge": "⚡ Flagship"
+        },
+        {
+            "id": "gpt-4o-mini",
+            "name": "GPT-4o mini",
+            "provider": "OpenAI",
+            "provider_color": "#10a37f",
+            "released": "July 2024",
+            "context_k": 128,
+            "params": "Unknown",
+            "strengths": ["Speed", "Cost", "Coding", "Vision"],
+            "mmlu": 82.0,
+            "humaneval": 87.2,
+            "math": 70.2,
+            "price_input": 0.15,
+            "price_output": 0.60,
+            "description": "Small, fast, and cheap. Outperforms GPT-3.5 Turbo on most benchmarks at a fraction of the cost.",
+            "badge": "💰 Best Value"
+        },
+        {
+            "id": "claude-3-5-sonnet",
+            "name": "Claude 3.5 Sonnet",
+            "provider": "Anthropic",
+            "provider_color": "#d4a27f",
+            "released": "Oct 2024",
+            "context_k": 200,
+            "params": "Unknown",
+            "strengths": ["Coding", "Reasoning", "Long context", "Safety"],
+            "mmlu": 88.3,
+            "humaneval": 93.7,
+            "math": 71.1,
+            "price_input": 3.00,
+            "price_output": 15.00,
+            "description": "Anthropic's best model. #1 on SWE-bench with 49% solve rate. Best-in-class for agentic coding tasks.",
+            "badge": "🏆 Best Coding"
+        },
+        {
+            "id": "claude-3-5-haiku",
+            "name": "Claude 3.5 Haiku",
+            "provider": "Anthropic",
+            "provider_color": "#d4a27f",
+            "released": "Nov 2024",
+            "context_k": 200,
+            "params": "Unknown",
+            "strengths": ["Speed", "Cost", "Instruction following"],
+            "mmlu": 79.9,
+            "humaneval": 88.1,
+            "math": 69.2,
+            "price_input": 0.80,
+            "price_output": 4.00,
+            "description": "Claude's fast, affordable tier. Matches Claude 3 Opus on many benchmarks at a fraction of the cost.",
+            "badge": "⚡ Fast Anthropic"
+        },
+        {
+            "id": "gemini-1.5-pro",
+            "name": "Gemini 1.5 Pro",
+            "provider": "Google",
+            "provider_color": "#4285F4",
+            "released": "Feb 2024",
+            "context_k": 1000,
+            "params": "Unknown",
+            "strengths": ["1M context", "Multimodal", "Long docs", "Code"],
+            "mmlu": 85.9,
+            "humaneval": 84.1,
+            "math": 67.7,
+            "price_input": 1.25,
+            "price_output": 5.00,
+            "description": "Industry-leading 1M token context. Can process entire codebases, hour-long videos, or massive documents in one pass.",
+            "badge": "📄 Longest Context"
+        },
+        {
+            "id": "gemini-2.0-flash",
+            "name": "Gemini 2.0 Flash",
+            "provider": "Google",
+            "provider_color": "#4285F4",
+            "released": "Dec 2024",
+            "context_k": 1000,
+            "params": "Unknown",
+            "strengths": ["Speed", "Multimodal", "Agentic", "Cost"],
+            "mmlu": 86.5,
+            "humaneval": 89.3,
+            "math": 71.8,
+            "price_input": 0.10,
+            "price_output": 0.40,
+            "description": "Google's newest model. Extremely fast, cheap, and powerful. Designed for agentic AI applications.",
+            "badge": "🆕 Latest Google"
+        },
+        {
+            "id": "deepseek-v3",
+            "name": "DeepSeek V3",
+            "provider": "DeepSeek",
+            "provider_color": "#6366f1",
+            "released": "Dec 2024",
+            "context_k": 128,
+            "params": "671B MoE",
+            "strengths": ["Coding", "Math", "Cost", "Open weights"],
+            "mmlu": 88.5,
+            "humaneval": 91.6,
+            "math": 75.9,
+            "price_input": 0.27,
+            "price_output": 1.10,
+            "description": "Chinese open-weights MoE model that rivals GPT-4o at a tiny fraction of the cost. Shocked the AI world on release.",
+            "badge": "🔥 Disruptor"
+        },
+        {
+            "id": "deepseek-r1",
+            "name": "DeepSeek R1",
+            "provider": "DeepSeek",
+            "provider_color": "#6366f1",
+            "released": "Jan 2025",
+            "context_k": 128,
+            "params": "671B MoE",
+            "strengths": ["Reasoning", "Math", "Science", "Open weights"],
+            "mmlu": 90.8,
+            "humaneval": 92.3,
+            "math": 97.3,
+            "price_input": 0.55,
+            "price_output": 2.19,
+            "description": "Reasoning model trained with pure RL. Matches o1 on math and science benchmarks. Fully open weights.",
+            "badge": "🧠 Best Reasoning"
+        },
+        {
+            "id": "llama-3.1-70b",
+            "name": "Llama 3.1 70B",
+            "provider": "Meta",
+            "provider_color": "#1877F2",
+            "released": "July 2024",
+            "context_k": 128,
+            "params": "70B",
+            "strengths": ["Open source", "Self-host", "Coding", "Multilingual"],
+            "mmlu": 83.6,
+            "humaneval": 80.5,
+            "math": 68.0,
+            "price_input": 0.59,
+            "price_output": 0.79,
+            "description": "Meta's flagship open model. Best open-source option at this size tier. Fully permissive for commercial use.",
+            "badge": "🔓 Open Source"
+        },
+        {
+            "id": "o1",
+            "name": "o1",
+            "provider": "OpenAI",
+            "provider_color": "#10a37f",
+            "released": "Dec 2024",
+            "context_k": 200,
+            "params": "Unknown",
+            "strengths": ["Reasoning", "Math", "Science", "Coding"],
+            "mmlu": 92.3,
+            "humaneval": 92.4,
+            "math": 96.4,
+            "price_input": 15.00,
+            "price_output": 60.00,
+            "description": "OpenAI's reasoning model. Thinks before answering. Tops nearly every reasoning, math, and science benchmark.",
+            "badge": "🎯 Best Overall"
+        },
+        {
+            "id": "mistral-large",
+            "name": "Mistral Large 2",
+            "provider": "Mistral",
+            "provider_color": "#ff7000",
+            "released": "July 2024",
+            "context_k": 128,
+            "params": "123B",
+            "strengths": ["Multilingual", "Coding", "Cost", "European"],
+            "mmlu": 84.0,
+            "humaneval": 92.1,
+            "math": 69.0,
+            "price_input": 2.00,
+            "price_output": 6.00,
+            "description": "Mistral's flagship. Top European frontier model. Strong multilingual performance, GDPR-compliant hosting available.",
+            "badge": "🌍 EU Frontier"
+        },
+        {
+            "id": "qwen2.5-72b",
+            "name": "Qwen 2.5 72B",
+            "provider": "Alibaba",
+            "provider_color": "#ff6a00",
+            "released": "Sep 2024",
+            "context_k": 128,
+            "params": "72B",
+            "strengths": ["Coding", "Math", "Multilingual", "Open source"],
+            "mmlu": 86.1,
+            "humaneval": 86.7,
+            "math": 83.1,
+            "price_input": 0.40,
+            "price_output": 1.20,
+            "description": "Alibaba's best open-source model. Exceptional at coding and math. Supports 29 languages natively.",
+            "badge": "⭐ Hidden Gem"
+        },
+    ]
+    return {"models": models, "count": len(models)}
